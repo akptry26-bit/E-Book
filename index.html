@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="ta" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>நூல் கூடம் | E-Book Store</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- PDF-Lib for Client-Side Dynamic Watermarking -->
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .slide-item {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+            transform: scale(0.98);
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .slide-item.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+        #toast {
+            transform: translateY(-150%) scale(0.85);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #toast.show { transform: translateY(0) scale(1); }
+    </style>
+</head>
+<body class="bg-[#F8FAFC] text-slate-800 antialiased selection:bg-indigo-600 selection:text-white pb-20 sm:pb-0">
+
+    <!-- Pop Notification -->
+    <div id="toast" class="fixed top-4 inset-x-4 sm:inset-x-auto sm:right-6 sm:top-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border text-xs sm:text-sm font-bold bg-white text-slate-800 border-slate-200 opacity-0 pointer-events-none">
+        <div id="toastIcon" class="p-1.5 rounded-full shrink-0"></div>
+        <span id="toastMsg" class="truncate">அறிவிப்பு</span>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-40 glassmorphism">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 sm:h-20">
+                <a href="#" class="flex items-center gap-2 sm:gap-3">
+                    <div class="w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-md shadow-indigo-600/30">
+                        <i data-lucide="book-marked" class="w-5 h-5 sm:w-6 sm:h-6"></i>
+                    </div>
+                    <div>
+                        <span class="text-lg sm:text-xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">நூல் கூடம்</span>
+                        <span class="block text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">E-Book Store</span>
+                    </div>
+                </a>
+
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <div class="hidden md:flex flex-col text-right pr-2">
+                        <span id="liveDate" class="text-[11px] font-bold text-slate-500"></span>
+                        <span id="liveClock" class="text-xs font-extrabold text-indigo-600 font-mono"></span>
+                    </div>
+
+                    <button onclick="toggleLanguage()" class="px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-slate-200 text-[11px] sm:text-xs font-bold hover:bg-slate-100 transition flex items-center gap-1">
+                        <i data-lucide="languages" class="w-3.5 h-3.5 text-indigo-600"></i>
+                        <span id="langBtnText">EN</span>
+                    </button>
+
+                    <button onclick="openModal('downloadCheckModal')" class="px-3 py-1.5 sm:px-4 sm:py-2 text-[11px] sm:text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-full border border-emerald-200 transition flex items-center gap-1.5">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                        <span>புத்தகத்தைப் பெறுக</span>
+                    </button>
+
+                    <a href="admin.html" class="hidden sm:flex px-4 py-2 text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-full border border-indigo-200 transition items-center gap-1.5">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                        <span>அட்மின்</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Bottom Navigation -->
+    <div class="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-lg border-t border-slate-200 px-6 py-2.5 flex justify-between items-center text-[10px] font-bold text-slate-500 shadow-2xl">
+        <a href="#catalog" class="flex flex-col items-center gap-1 hover:text-indigo-600 transition">
+            <i data-lucide="book-open" class="w-4 h-4"></i>
+            <span>புத்தகங்கள்</span>
+        </a>
+        <button onclick="openModal('downloadCheckModal')" class="flex flex-col items-center gap-1 text-emerald-600">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            <span>பதிவிறக்கு</span>
+        </button>
+        <a href="#terms" class="flex flex-col items-center gap-1 hover:text-indigo-600 transition">
+            <i data-lucide="file-text" class="w-4 h-4"></i>
+            <span>விதிகள்</span>
+        </a>
+        <a href="#contact" class="flex flex-col items-center gap-1 hover:text-indigo-600 transition">
+            <i data-lucide="headset" class="w-4 h-4"></i>
+            <span>உதவி</span>
+        </a>
+        <a href="admin.html" class="flex flex-col items-center gap-1 hover:text-indigo-600 transition">
+            <i data-lucide="user-cog" class="w-4 h-4"></i>
+            <span>அட்மின்</span>
+        </a>
+    </div>
+
+    <!-- Responsive Hero Slider -->
+    <section class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-6 sm:pb-10">
+        <div class="relative overflow-hidden rounded-2xl sm:rounded-3xl shadow-2xl bg-slate-950 text-white h-[380px] sm:h-[420px] w-full border border-slate-800">
+            <div id="slidesContainer" class="w-full h-full relative overflow-hidden"></div>
+
+            <button onclick="prevSlide()" class="absolute left-2 sm:left-5 top-1/2 -translate-y-1/2 p-2 sm:p-3 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white backdrop-blur border border-slate-700 transition z-20">
+                <i data-lucide="chevron-left" class="w-5 h-5"></i>
+            </button>
+            <button onclick="nextSlide()" class="absolute right-2 sm:right-5 top-1/2 -translate-y-1/2 p-2 sm:p-3 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white backdrop-blur border border-slate-700 transition z-20">
+                <i data-lucide="chevron-right" class="w-5 h-5"></i>
+            </button>
+            <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20" id="sliderDots"></div>
+        </div>
+    </section>
+
+    <!-- Books Catalog -->
+    <main id="catalog" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <div>
+                <h2 class="text-2xl sm:text-3xl font-black text-slate-900">மின்னூல் நூலகம்</h2>
+                <p class="text-slate-500 text-xs sm:text-sm mt-0.5">பாதுகாக்கப்பட்ட Watermark PDF மற்றும் உடனடி UPI கட்டணம்.</p>
+            </div>
+            <div class="relative w-full sm:w-72">
+                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-3"></i>
+                <input id="searchInput" oninput="filterBooks()" type="text" placeholder="தேடுக / Search books..." class="w-full pl-10 pr-4 py-2 sm:py-2.5 text-xs sm:text-sm bg-white border border-slate-200 rounded-xl sm:rounded-2xl shadow-sm focus:outline-indigo-500 transition">
+            </div>
+        </div>
+
+        <div id="booksGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8"></div>
+    </main>
+
+    <!-- Terms & Conditions Section -->
+    <section id="terms" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 border-t border-slate-200">
+        <div class="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm space-y-6">
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-rose-50 text-rose-600 rounded-xl">
+                    <i data-lucide="shield-alert" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl sm:text-2xl font-black text-slate-900">விதிமுறைகள் & நிபந்தனைகள்</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">மின்புத்தகம் வாங்குவதற்கு முன் கவனமாக வாசிக்கவும்.</p>
+                </div>
+            </div>
+
+            <div class="p-4 bg-rose-50/80 border-l-4 border-rose-600 rounded-xl space-y-1">
+                <h4 class="text-sm font-extrabold text-rose-900 flex items-center gap-2">
+                    <i data-lucide="alert-octagon" class="w-4 h-4 text-rose-600"></i>
+                    <span>முக்கிய அறிவிப்பு: கட்டணம் திருப்பித் தரப்படாது (No Refund Policy)</span>
+                </h4>
+                <p class="text-xs sm:text-sm text-rose-800 leading-relaxed font-medium">
+                    மின்புத்தகங்கள் டிஜிட்டல் முறையில் உடனடியாக வழங்கப்படுவதால், பணம் செலுத்திய பின் <b>எக்காரணம் கொண்டும் பணம் திருப்பித் தரப்பட மாட்டாது (Once paid, amount is strictly non-refundable)</b>.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm text-slate-600">
+                <div class="p-4 bg-slate-50 rounded-xl space-y-1.5 border border-slate-100">
+                    <h5 class="font-bold text-slate-800 flex items-center gap-1.5">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-indigo-600"></i>
+                        <span>1. PDF வாட்டர்மார்க் பாதுகாப்பு</span>
+                    </h5>
+                    <p class="text-[11px] sm:text-xs leading-relaxed">
+                        நீங்கள் பதிவிறக்கும் மின்புத்தகத்தில் உங்கள் பெயர் மற்றும் மொபைல் எண் வாட்டர்மார்க்காக இணைக்கப்படும். பகிர்வது தடைசெய்யப்பட்டுள்ளது.
+                    </p>
+                </div>
+
+                <div class="p-4 bg-slate-50 rounded-xl space-y-1.5 border border-slate-100">
+                    <h5 class="font-bold text-slate-800 flex items-center gap-1.5">
+                        <i data-lucide="download" class="w-4 h-4 text-indigo-600"></i>
+                        <span>2. அதிகபட்சம் 3 முறை பதிவிறக்கம்</span>
+                    </h5>
+                    <p class="text-[11px] sm:text-xs leading-relaxed">
+                        ஒவ்வொரு ஆர்டருக்கும் அதிகபட்சம் 3 முறை மட்டுமே PDF பதிவிறக்க வாய்ப்பு வழங்கப்படும்.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Support Section -->
+    <section id="contact" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 border-t border-slate-200">
+        <div class="bg-gradient-to-tr from-indigo-950 to-slate-900 rounded-2xl sm:rounded-3xl p-6 sm:p-12 text-white shadow-xl relative overflow-hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
+                <div class="space-y-4">
+                    <span class="px-3 py-1 bg-indigo-500/30 text-indigo-300 border border-indigo-400/30 text-[10px] sm:text-xs font-bold rounded-full">கட்டண உதவி மையம்</span>
+                    <h3 class="text-2xl sm:text-3xl font-black tracking-tight">பணம் செலுத்துவதில் சிக்கலா?</h3>
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">
+                        பணம் கழிக்கப்பட்டு புத்தகம் வரவில்லையா அல்லது UTR பிழை உள்ளதா? உங்கள் விவரங்களை உடனே எங்களுக்கு அனுப்புங்கள்.
+                    </p>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-md p-5 sm:p-7 rounded-2xl border border-white/20">
+                    <h4 class="text-base sm:text-lg font-bold mb-3 flex items-center gap-2">
+                        <i data-lucide="message-square-plus" class="w-4 h-4 text-emerald-400"></i> உதவி கோரிக்கை அனுப்பவும்
+                    </h4>
+                    <form onsubmit="handleSupportSubmit(event)" class="space-y-2.5 text-xs sm:text-sm text-slate-900">
+                        <div><input type="text" id="supName" required placeholder="உங்கள் பெயர்" class="w-full px-3.5 py-2.5 bg-white rounded-xl focus:outline-none"></div>
+                        <div><input type="tel" id="supPhone" required maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="10 இலக்க மொபைல் எண்" class="w-full px-3.5 py-2.5 bg-white rounded-xl focus:outline-none font-mono"></div>
+                        <div><input type="text" id="supUtr" placeholder="சிக்கல் உள்ள UTR எண் (Optional)" class="w-full px-3.5 py-2.5 bg-white rounded-xl focus:outline-none font-mono"></div>
+                        <div><textarea id="supMsg" required rows="3" placeholder="பிரச்சனை விவரம்..." class="w-full px-3.5 py-2.5 bg-white rounded-xl focus:outline-none"></textarea></div>
+                        <button type="submit" class="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition shadow-lg flex items-center justify-center gap-1.5 text-xs sm:text-sm active:scale-95">
+                            <i data-lucide="send" class="w-4 h-4"></i> கோரிக்கையை அட்மினுக்கு அனுப்புக
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal 1: Sample Preview & In-Browser Reader -->
+    <div id="previewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white rounded-2xl sm:rounded-3xl max-w-2xl w-full p-5 sm:p-8 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('previewModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
+                    <i data-lucide="book-open" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 id="previewTitle" class="text-base sm:text-lg font-bold text-slate-900">மாதிரி</h3>
+                    <span class="text-xs text-slate-500">முன்னோட்டம் & வாசகர் கருத்துகள்</span>
+                </div>
+            </div>
+            
+            <div id="previewContent" class="border border-slate-100 py-3 max-h-56 overflow-y-auto text-xs sm:text-sm leading-relaxed text-slate-600 bg-slate-50 p-4 rounded-xl"></div>
+            
+            <!-- In-browser Reader Demo Option -->
+            <div class="p-3 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-between">
+                <div>
+                    <h5 class="font-bold text-xs text-indigo-950">In-Browser E-Book Reader</h5>
+                    <p class="text-[10px] text-indigo-600">பதிவிறக்காமல் நேரலையாக வாசிக்கலாம்</p>
+                </div>
+                <button onclick="alert('ஆன்லைன் ரீடர் முழுமையாக திறக்கப்பட்டுள்ளது!')" class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700">திறக்க (Open)</button>
+            </div>
+
+            <!-- Review & Rating Section -->
+            <div class="pt-3 border-t border-slate-100 space-y-2">
+                <h5 class="font-bold text-xs text-slate-800">வாசகர் மதிப்பீடு (4.9 / 5.0 ★)</h5>
+                <p class="text-[11px] text-slate-500 italic">"மிகவும் பயனுள்ள மின்புத்தகம். உடனடியாக PDF பதிவிறக்கம் ஆனது!" - அருண், சென்னை.</p>
+            </div>
+
+            <button onclick="closeModal('previewModal')" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs sm:text-sm rounded-xl transition">மூடுக</button>
+        </div>
+    </div>
+
+    <!-- Modal 2: Dynamic UPI QR Payment with COUPON CODE System -->
+    <div id="checkoutModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white rounded-2xl sm:rounded-3xl max-w-md w-full p-5 sm:p-7 space-y-3.5 shadow-2xl relative max-h-[94vh] overflow-y-auto">
+            <button onclick="closeModal('checkoutModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            
+            <div>
+                <h3 class="text-lg sm:text-xl font-bold text-slate-900">UPI மூலம் கட்டணம்</h3>
+                <p class="text-[11px] sm:text-xs text-slate-500">QR குறியீட்டை ஸ்கேன் செய்து தொகையை அனுப்பவும்.</p>
+            </div>
+
+            <div class="p-3 bg-indigo-50/80 border border-indigo-100 rounded-xl sm:rounded-2xl flex justify-between items-center">
+                <div>
+                    <h4 id="checkoutBookTitle" class="font-bold text-xs sm:text-sm text-indigo-950">புத்தகம்</h4>
+                    <p class="text-[10px] sm:text-[11px] text-indigo-600 font-semibold">வாட்டர்மார்க் பதிக்கப்பட்ட PDF</p>
+                </div>
+                <div class="text-right">
+                    <span id="checkoutAmount" class="text-xl sm:text-2xl font-black text-indigo-700">₹0</span>
+                    <span id="discountBadge" class="hidden block text-[10px] font-bold text-emerald-600">கூப்பன் பயன்படுத்தப்பட்டது</span>
+                </div>
+            </div>
+
+            <!-- Coupon Code Field -->
+            <div class="flex gap-2">
+                <input type="text" id="couponInput" placeholder="கூப்பன் குறியீடு (எ.கா: SAVE50)" class="w-full px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-xl uppercase font-mono">
+                <button type="button" onclick="applyCouponCode()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shrink-0">பயன்படுத்து</button>
+            </div>
+
+            <div class="bg-slate-50 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 text-center space-y-2">
+                <p class="text-[11px] sm:text-xs font-bold text-slate-700">GPay / PhonePe / Paytm மூலம் ஸ்கேன் செய்க</p>
+                <div class="flex justify-center">
+                    <img id="upiQrImage" src="" alt="UPI QR" class="w-36 h-36 sm:w-44 sm:h-44 border-4 border-white shadow rounded-xl bg-white">
+                </div>
+                <div class="flex items-center justify-center gap-2 bg-white py-1.5 px-3 rounded-lg border border-slate-200 text-[11px] sm:text-xs">
+                    <span class="text-slate-500">UPI ID:</span>
+                    <span id="displayUpiId" class="font-mono font-bold text-slate-800 truncate max-w-[170px] sm:max-w-none"></span>
+                    <button onclick="copyUpi()" class="text-indigo-600 font-bold hover:underline shrink-0">நகலெடு</button>
+                </div>
+            </div>
+
+            <form onsubmit="handleUpiSubmit(event)" class="space-y-3 text-xs sm:text-sm">
+                <div>
+                    <label class="block text-[11px] sm:text-xs font-bold text-slate-600 mb-1">உங்கள் பெயர்</label>
+                    <input type="text" id="custName" required placeholder="எ.கா: சுந்தர்" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] sm:text-xs font-bold text-slate-600 mb-1">மொபைல் எண் (10 இலக்கம் மட்டும்)</label>
+                    <input type="tel" id="custMobile" required maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" placeholder="9876543210" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-indigo-500 font-mono">
+                </div>
+                <div>
+                    <label class="block text-[11px] sm:text-xs font-bold text-slate-600 mb-1">மின்னஞ்சல் (Email)</label>
+                    <input type="email" id="custEmail" required placeholder="name@example.com" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] sm:text-xs font-bold text-slate-600 mb-1">UPI Transaction ID / UTR (12 இலக்கம்)</label>
+                    <input type="text" id="custUtr" required placeholder="4092XXXXXXXX" pattern="[0-9A-Za-z]{8,22}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-indigo-500 font-mono">
+                </div>
+
+                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                    <label class="flex items-start gap-2.5 cursor-pointer">
+                        <input type="checkbox" id="refundAgreeCheck" onchange="togglePayButtonState()" required class="mt-0.5 w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer">
+                        <span class="text-[11px] leading-relaxed text-amber-900 font-medium">
+                            <b>கட்டணம் திருப்பித் தரப்படாது (No Refund Policy):</b> பணம் செலுத்திய பின் எக்காரணம் கொண்டும் திருப்பித் தரப்படாது என்பதை ஏற்கிறேன்.
+                        </span>
+                    </label>
+                </div>
+
+                <button type="submit" id="paySubmitBtn" disabled class="w-full py-2.5 sm:py-3 bg-slate-300 text-slate-500 font-bold rounded-xl shadow transition flex items-center justify-center gap-2 cursor-not-allowed">
+                    <i data-lucide="check-circle" class="w-4 h-4"></i>
+                    <span>Confirm My Payment</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 3: Multi-Book Download Modal with Live PDF Watermarking -->
+    <div id="downloadCheckModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-7 space-y-4 shadow-2xl relative max-h-[88vh] overflow-y-auto">
+            <button onclick="closeModal('downloadCheckModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
+                    <i data-lucide="download-cloud" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h3 class="text-base sm:text-lg font-bold text-slate-900">மின்புத்தகத்தைப் பதிவிறக்குக</h3>
+                    <p class="text-[11px] sm:text-xs text-slate-500">UTR எண், மொபைல் அல்லது மின்னஞ்சலை உள்ளிடவும்</p>
+                </div>
+            </div>
+
+            <form onsubmit="verifyDownload(event)" class="space-y-3">
+                <div>
+                    <label class="block text-[11px] sm:text-xs font-bold text-slate-600 mb-1">தேடல் குறியீடு</label>
+                    <input type="text" id="searchUtr" required placeholder="UTR, 10 இலக்க மொபைல் அல்லது Email..." class="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-indigo-500">
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition text-xs sm:text-sm">
+                    நிலை சரிபார் & புத்தகங்களைப் பார்
+                </button>
+            </form>
+            
+            <div id="downloadResult" class="space-y-2.5 pt-2"></div>
+        </div>
+    </div>
+
+    <script>
+        function getUpiConfig() {
+            const config = JSON.parse(localStorage.getItem('admin_upi_settings') || '{}');
+            return {
+                upiId: config.upiId || "9876543210@upi",
+                storeName: config.storeName || "Nool Koodam"
+            };
+        }
+
+        let currentLang = localStorage.getItem('site_lang') || 'ta';
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'ta' ? 'en' : 'ta';
+            localStorage.setItem('site_lang', currentLang);
+            document.getElementById('langBtnText').innerText = currentLang === 'ta' ? 'EN' : 'தமிழ்';
+            renderBooks();
+        }
+
+        function updateLiveClock() {
+            const now = new Date();
+            const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            const dateEl = document.getElementById('liveDate');
+            const clockEl = document.getElementById('liveClock');
+            if (dateEl) dateEl.innerText = now.toLocaleDateString(currentLang === 'ta' ? 'ta-IN' : 'en-US', dateOptions);
+            if (clockEl) clockEl.innerText = now.toLocaleTimeString('en-US', { hour12: true });
+        }
+        setInterval(updateLiveClock, 1000);
+        updateLiveClock();
+
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.innerText = msg;
+            if (type === 'success') {
+                toast.className = "fixed top-4 inset-x-4 sm:inset-x-auto sm:right-6 sm:top-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border text-xs sm:text-sm font-bold bg-emerald-50 text-emerald-800 border-emerald-200 show";
+                toastIcon.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5 text-emerald-600"></i>`;
+            } else {
+                toast.className = "fixed top-4 inset-x-4 sm:inset-x-auto sm:right-6 sm:top-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border text-xs sm:text-sm font-bold bg-rose-50 text-rose-800 border-rose-200 show";
+                toastIcon.innerHTML = `<i data-lucide="alert-circle" class="w-5 h-5 text-rose-600"></i>`;
+            }
+            lucide.createIcons();
+            setTimeout(() => toast.classList.remove('show'), 3500);
+        }
+
+        function togglePayButtonState() {
+            const check = document.getElementById('refundAgreeCheck');
+            const btn = document.getElementById('paySubmitBtn');
+            if (check.checked) {
+                btn.disabled = false;
+                btn.className = "w-full py-2.5 sm:py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition flex items-center justify-center gap-2 active:scale-95 cursor-pointer";
+            } else {
+                btn.disabled = true;
+                btn.className = "w-full py-2.5 sm:py-3 bg-slate-300 text-slate-500 font-bold rounded-xl shadow transition flex items-center justify-center gap-2 cursor-not-allowed";
+            }
+        }
+
+        // Coupon Logic
+        let activeBook = { title: '', originalAmount: 0, currentAmount: 0 };
+        function applyCouponCode() {
+            const code = document.getElementById('couponInput').value.trim().toUpperCase();
+            const coupons = JSON.parse(localStorage.getItem('admin_coupons_data') || '[]');
+            const valid = coupons.find(c => c.code === code);
+
+            if (!valid) {
+                showToast("தவறான கூப்பன் குறியீடு!", "error");
+                return;
+            }
+
+            const discount = (activeBook.originalAmount * Number(valid.percent)) / 100;
+            activeBook.currentAmount = Math.max(1, Math.round(activeBook.originalAmount - discount));
+            
+            document.getElementById('checkoutAmount').innerText = '₹' + activeBook.currentAmount;
+            document.getElementById('discountBadge').classList.remove('hidden');
+            document.getElementById('discountBadge').innerText = `${valid.percent}% தள்ளுபடி பெறப்பட்டது!`;
+            
+            // Re-generate QR for new amount
+            const upiConfig = getUpiConfig();
+            const upiUrl = `upi://pay?pa=${upiConfig.upiId}&pn=${encodeURIComponent(upiConfig.storeName)}&am=${activeBook.currentAmount}&cu=INR&tn=${encodeURIComponent(activeBook.title)}`;
+            document.getElementById('upiQrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUrl)}`;
+            
+            showToast(`${valid.percent}% தள்ளுபடி பயன்படுத்தப்பட்டது!`);
+        }
+
+        const DEFAULT_SLIDES = [
+            {
+                tag: "1 / 6 • Offer",
+                title: "அனைத்து மின்புத்தகங்களுக்கும் 50% சலுகை!",
+                desc: "UPI மூலம் நேரடியாகப் பணம் செலுத்தி உடனுக்குடன் முழு மின்புத்தகத்தைப் பதிவிறக்கம் செய்யுங்கள்.",
+                bgImage: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=1600&auto=format&fit=crop&q=80"
+            },
+            {
+                tag: "2 / 6 • Instant Pay",
+                title: "நேரடி QR குறியீடு கட்டண முறை",
+                desc: "GPay, PhonePe அல்லது Paytm பயன்படுத்தி நொடிகளில் பணம் செலுத்தலாம்.",
+                bgImage: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=1600&auto=format&fit=crop&q=80"
+            },
+            {
+                tag: "3 / 6 • Finance",
+                title: "நிதி மேலாண்மை & சேமிப்பு உத்திகள்",
+                desc: "முதலீடு மற்றும் நிதி சுதந்திரம் அடைவதற்கான சிறந்த கையேடுகள்.",
+                bgImage: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=1600&auto=format&fit=crop&q=80"
+            },
+            {
+                tag: "4 / 6 • Preview",
+                title: "இலவச மாதிரி வாசிப்பு வசதி",
+                desc: "வாங்குவதற்கு முன்பே புத்தகத்தின் மாதிரி பக்கங்களை வாசிக்கலாம்.",
+                bgImage: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=1600&auto=format&fit=crop&q=80"
+            },
+            {
+                tag: "5 / 6 • Tech",
+                title: "AI & சாப்ட்வேர் கையேடுகள்",
+                desc: "எதிர்கால தொழில்நுட்பங்களை உங்கள் சொந்த மொழியிலேயே கற்றுக்கொள்ளுங்கள்.",
+                bgImage: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1600&auto=format&fit=crop&q=80"
+            },
+            {
+                tag: "6 / 6 • Policy",
+                title: "கட்டணம் திருப்பித் தரப்படாது (No Refund)",
+                desc: "பாதுகாப்பான டிஜிட்டல் பதிவிறக்கம். வாங்குமுன் விதிமுறைகளை வாசிக்கவும்.",
+                bgImage: "https://images.unsplash.com/photo-1450133064473-71024230f91b?w=1600&auto=format&fit=crop&q=80"
+            }
+        ];
+
+        function getSlides() {
+            const data = localStorage.getItem('admin_slides_data');
+            return data ? JSON.parse(data) : DEFAULT_SLIDES;
+        }
+
+        let currentSlide = 0;
+        function renderSlides() {
+            const slides = getSlides();
+            const container = document.getElementById('slidesContainer');
+            const dotsContainer = document.getElementById('sliderDots');
+
+            container.innerHTML = slides.map((s, idx) => `
+                <div class="slide-item ${idx === 0 ? 'active' : ''} w-full h-full p-6 sm:p-14 flex items-center justify-start" style="background: linear-gradient(to right, rgba(2, 6, 23, 0.92) 30%, rgba(2, 6, 23, 0.5)), url('${s.bgImage}') center/cover no-repeat;">
+                    <div class="max-w-2xl space-y-2 sm:space-y-3 z-10">
+                        <span class="px-2.5 py-0.5 bg-indigo-500/30 text-indigo-300 border border-indigo-400/30 text-[10px] sm:text-xs font-extrabold rounded-full inline-block">${s.tag}</span>
+                        <h2 class="text-2xl sm:text-4xl font-black leading-tight text-white">${s.title}</h2>
+                        <p class="text-slate-300 text-xs sm:text-sm leading-relaxed">${s.desc}</p>
+                        <a href="#catalog" class="inline-flex items-center gap-1.5 px-4 py-2 sm:px-6 sm:py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs sm:text-sm transition mt-1">புத்தகங்கள் <i data-lucide="arrow-down" class="w-3.5 h-3.5"></i></a>
+                    </div>
+                </div>
+            `).join('');
+
+            dotsContainer.innerHTML = slides.map((_, i) => 
+                `<button onclick="setSlide(${i})" class="w-2 h-2 rounded-full ${i === 0 ? 'bg-white w-4' : 'bg-white/40'} transition-all cursor-pointer"></button>`
+            ).join('');
+            lucide.createIcons();
+        }
+
+        function updateSlider() {
+            const slides = document.querySelectorAll('.slide-item');
+            const dots = document.getElementById('sliderDots').children;
+            slides.forEach((s, i) => {
+                s.classList.toggle('active', i === currentSlide);
+                if (dots[i]) {
+                    dots[i].className = i === currentSlide ? 'w-4 h-2 rounded-full bg-white transition-all' : 'w-2 h-2 rounded-full bg-white/40 transition-all';
+                }
+            });
+        }
+        function nextSlide() { 
+            const slides = document.querySelectorAll('.slide-item');
+            if (slides.length) { currentSlide = (currentSlide + 1) % slides.length; updateSlider(); }
+        }
+        function prevSlide() { 
+            const slides = document.querySelectorAll('.slide-item');
+            if (slides.length) { currentSlide = (currentSlide - 1 + slides.length) % slides.length; updateSlider(); }
+        }
+        function setSlide(i) { currentSlide = i; updateSlider(); }
+        setInterval(nextSlide, 5000);
+
+        function getBooks() {
+            const data = localStorage.getItem('ebook_inventory');
+            return data ? JSON.parse(data) : [];
+        }
+
+        function renderBooks() {
+            const books = getBooks();
+            const grid = document.getElementById('booksGrid');
+
+            if (books.length === 0) {
+                grid.innerHTML = `<div class="col-span-1 sm:col-span-3 text-center py-12 text-slate-400 font-semibold text-xs sm:text-sm">புத்தகங்கள் ஏதுமில்லை.</div>`;
+                return;
+            }
+
+            grid.innerHTML = books.map(book => `
+                <div class="book-card bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-sm hover:shadow-xl transition duration-300 flex flex-col justify-between" data-title="${book.title}">
+                    <div>
+                        <div class="relative overflow-hidden rounded-xl sm:rounded-2xl mb-3 sm:mb-4 bg-slate-100 aspect-[3/4]">
+                            <img src="${book.cover}" alt="${book.title}" class="w-full h-full object-cover">
+                            <button onclick="openPreview('${encodeURIComponent(book.title)}', '${encodeURIComponent(book.preview)}')" class="absolute bottom-2.5 right-2.5 px-2.5 py-1 sm:px-3 sm:py-1.5 bg-white/95 backdrop-blur rounded-lg text-[10px] sm:text-xs font-bold text-slate-700 shadow hover:bg-white flex items-center gap-1 transition">
+                                <i data-lucide="eye" class="w-3 h-3"></i> மாதிரி வாசிப்பு
+                            </button>
+                        </div>
+                        <h3 class="text-base sm:text-lg font-bold text-slate-900 line-clamp-1">${book.title}</h3>
+                        <p class="text-[11px] sm:text-xs text-slate-500 mt-0.5">${book.author}</p>
+                    </div>
+                    <div class="pt-4 mt-3 border-t border-slate-100 flex items-center justify-between">
+                        <div>
+                            <span class="text-[11px] text-slate-400 line-through">₹${book.origPrice}</span>
+                            <span class="text-xl sm:text-2xl font-black text-slate-900 ml-1">₹${book.price}</span>
+                        </div>
+                        <button onclick="openCheckout('${book.title}', ${book.price})" class="px-3.5 py-2 sm:px-4 sm:py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] sm:text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-md shadow-indigo-600/20 active:scale-95">
+                            <i data-lucide="qr-code" class="w-3.5 h-3.5"></i> வாங்குக
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function filterBooks() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('.book-card').forEach(card => {
+                const title = card.getAttribute('data-title').toLowerCase();
+                card.style.display = title.includes(q) ? 'flex' : 'none';
+            });
+        }
+
+        function openPreview(title, content) {
+            document.getElementById('previewTitle').innerText = decodeURIComponent(title);
+            document.getElementById('previewContent').innerText = decodeURIComponent(content);
+            openModal('previewModal');
+        }
+
+        function openCheckout(title, amount) {
+            activeBook = { title: title, originalAmount: amount, currentAmount: amount };
+            const upiConfig = getUpiConfig();
+
+            document.getElementById('checkoutBookTitle').innerText = title;
+            document.getElementById('checkoutAmount').innerText = '₹' + amount;
+            document.getElementById('displayUpiId').innerText = upiConfig.upiId;
+
+            document.getElementById('discountBadge').classList.add('hidden');
+            document.getElementById('couponInput').value = '';
+            document.getElementById('refundAgreeCheck').checked = false;
+            togglePayButtonState();
+
+            const upiUrl = `upi://pay?pa=${upiConfig.upiId}&pn=${encodeURIComponent(upiConfig.storeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(title)}`;
+            document.getElementById('upiQrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUrl)}`;
+            openModal('checkoutModal');
+        }
+
+        function copyUpi() {
+            const upiConfig = getUpiConfig();
+            navigator.clipboard.writeText(upiConfig.upiId);
+            showToast("UPI ID நகலெடுக்கப்பட்டது: " + upiConfig.upiId);
+        }
+
+        function handleUpiSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('custName').value.trim();
+            const mobile = document.getElementById('custMobile').value.trim();
+            const email = document.getElementById('custEmail').value.trim().toLowerCase();
+            const utr = document.getElementById('custUtr').value.trim();
+
+            if (mobile.length !== 10) {
+                showToast("மொபைல் எண் சரியாக 10 இலக்கங்களில் இருக்க வேண்டும்!", "error");
+                return;
+            }
+
+            const blockedUsers = JSON.parse(localStorage.getItem('admin_blocked_users') || '[]');
+            const isBlocked = blockedUsers.some(b => b.email === email || b.mobile === mobile);
+            if (isBlocked) {
+                alert("எச்சரிக்கை: உங்கள் கணக்கு அட்மினால் முடக்கப்பட்டுள்ளது (Blocked)!");
+                closeModal('checkoutModal');
+                return;
+            }
+
+            const orders = JSON.parse(localStorage.getItem('ebook_orders') || '[]');
+            const isDuplicateUtr = orders.some(o => o.utr.toLowerCase() === utr.toLowerCase());
+
+            if (isDuplicateUtr) {
+                const fraudList = JSON.parse(localStorage.getItem('admin_fraud_alerts') || '[]');
+                const existingFraud = fraudList.find(f => f.email === email || f.mobile === mobile);
+
+                if (existingFraud) {
+                    existingFraud.attempts += 1;
+                    existingFraud.lastUtr = utr;
+                    existingFraud.lastDate = new Date().toLocaleString('ta-IN');
+                } else {
+                    fraudList.unshift({
+                        id: 'FRD-' + Math.floor(1000 + Math.random() * 9000),
+                        name: name,
+                        mobile: mobile,
+                        email: email,
+                        attemptedBook: activeBook.title,
+                        lastUtr: utr,
+                        attempts: 1,
+                        lastDate: new Date().toLocaleString('ta-IN')
+                    });
+                }
+                localStorage.setItem('admin_fraud_alerts', JSON.stringify(fraudList));
+                showToast("மோசடி எச்சரிக்கை! இந்த UTR ஏற்கனவே பயன்படுத்தப்பட்டது.", "error");
+                return;
+            }
+
+            const newOrder = {
+                id: 'ORD-' + Math.floor(10000 + Math.random() * 90000),
+                customerName: name,
+                customerMobile: mobile,
+                bookTitle: activeBook.title,
+                amount: activeBook.currentAmount,
+                email: email,
+                utr: utr,
+                date: new Date().toLocaleDateString('ta-IN'),
+                time: new Date().toLocaleTimeString('en-US', { hour12: true }),
+                status: 'சரிபார்க்கப்பட வேண்டும்',
+                downloadCount: 0
+            };
+
+            orders.unshift(newOrder);
+            localStorage.setItem('ebook_orders', JSON.stringify(orders));
+
+            closeModal('checkoutModal');
+            showToast("UTR பெறப்பட்டது! அட்மின் அனுமதித்த பின் பதிவிறக்கலாம்.");
+            e.target.reset();
+        }
+
+        function verifyDownload(e) {
+            e.preventDefault();
+            const val = document.getElementById('searchUtr').value.trim().toLowerCase();
+            const orders = JSON.parse(localStorage.getItem('ebook_orders') || '[]');
+            const res = document.getElementById('downloadResult');
+
+            const matchedOrders = orders.filter(o => 
+                o.utr.toLowerCase() === val || 
+                o.email.toLowerCase() === val || 
+                (o.customerMobile && o.customerMobile === val)
+            );
+
+            if (matchedOrders.length === 0) {
+                res.innerHTML = `<span class="text-rose-600 font-bold block py-2 text-xs">விவரங்கள் கிடைக்கவில்லை / No orders found.</span>`;
+                return;
+            }
+
+            res.innerHTML = matchedOrders.map(ord => {
+                const isLimitReached = ord.downloadCount >= 3;
+                const isApproved = ord.status === 'அனுப்பப்பட்டது';
+                const isRejected = ord.status === 'நிராகரிக்கப்பட்டது';
+
+                let statusBadge = `<span class="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-amber-200 text-amber-800">நிலுவையில்</span>`;
+                let boxClass = "bg-amber-50/70 border-amber-200";
+
+                if (isApproved) {
+                    statusBadge = `<span class="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-800">அனுமதிக்கப்பட்டது</span>`;
+                    boxClass = "bg-emerald-50/70 border-emerald-200";
+                } else if (isRejected) {
+                    statusBadge = `<span class="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-rose-200 text-rose-800">நிராகரிக்கப்பட்டது</span>`;
+                    boxClass = "bg-rose-50/70 border-rose-200";
+                }
+
+                return `
+                    <div class="p-3.5 rounded-xl border text-left transition ${boxClass}">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                ${statusBadge}
+                                <h4 class="font-extrabold text-slate-900 mt-1 text-xs sm:text-sm">${ord.bookTitle}</h4>
+                                <p class="text-[10px] text-slate-500">ID: ${ord.id} | UTR: ${ord.utr}</p>
+                            </div>
+                            <span class="text-xs font-bold text-indigo-700">₹${ord.amount}</span>
+                        </div>
+
+                        <div class="mt-2.5 pt-2.5 border-t border-slate-200/60 flex items-center justify-between">
+                            ${isRejected ? `
+                                <span class="text-[11px] font-bold text-rose-600 flex items-center gap-1">
+                                    <i data-lucide="x-circle" class="w-3.5 h-3.5"></i> தவறான UTR / நிராகரிக்கப்பட்டது
+                                </span>
+                            ` : `
+                                <span class="text-[11px] font-bold ${isLimitReached ? 'text-rose-600' : 'text-slate-600'}">
+                                    வாய்ப்பு: <b>${ord.downloadCount} / 3</b>
+                                </span>
+
+                                ${isApproved ? (
+                                    isLimitReached ? `
+                                        <span class="text-[11px] font-bold text-rose-600 flex items-center gap-1">
+                                            <i data-lucide="shield-alert" class="w-3 h-3"></i> வரம்பு முடிந்தது
+                                        </span>
+                                    ` : `
+                                        <button onclick="downloadWatermarkedPdf('${ord.id}')" class="inline-flex items-center gap-1 px-3 py-1 bg-emerald-600 text-white rounded-lg font-bold text-[11px] hover:bg-emerald-700 transition">
+                                            <i data-lucide="shield-check" class="w-3 h-3"></i> வாட்டர்மார்க் PDF
+                                        </button>
+                                    `
+                                ) : `
+                                    <span class="text-[11px] text-amber-700 font-bold">சரிபார்க்கப்படுகிறது...</span>
+                                `}
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        // Live Dynamic Watermark Generator using PDF-Lib
+        async function downloadWatermarkedPdf(orderId) {
+            const orders = JSON.parse(localStorage.getItem('ebook_orders') || '[]');
+            const index = orders.findIndex(o => o.id === orderId);
+            if (index === -1) return;
+
+            const ord = orders[index];
+            const books = getBooks();
+            const matchedBook = books.find(b => b.title === ord.bookTitle);
+
+            if (!matchedBook || !matchedBook.pdfData) {
+                alert('PDF கோப்பு கிடைக்கவில்லை!');
+                return;
+            }
+
+            showToast("வாட்டர்மார்க் பதிக்கப்பட்டு PDF தயாராகிறது...", "success");
+
+            try {
+                const existingPdfBytes = await fetch(matchedBook.pdfData).then(res => res.arrayBuffer());
+                const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
+                const pages = pdfDoc.getPages();
+                const font = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
+
+                // Watermark Text: Customer Details
+                const watermarkText = `Licensed to: ${ord.customerName} | Mob: ${ord.customerMobile} | Order: ${ord.id}`;
+
+                pages.forEach(page => {
+                    const { width, height } = page.getSize();
+                    page.drawText(watermarkText, {
+                        x: 20,
+                        y: 15,
+                        size: 9,
+                        font: font,
+                        color: PDFLib.rgb(0.8, 0.2, 0.2),
+                        opacity: 0.65,
+                    });
+                });
+
+                const pdfBytes = await pdfDoc.save();
+                const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `${ord.bookTitle}_Protected.pdf`;
+                link.click();
+
+                // Increment Count
+                orders[index].downloadCount = (orders[index].downloadCount || 0) + 1;
+                localStorage.setItem('ebook_orders', JSON.stringify(orders));
+
+                const bIdx = books.findIndex(b => b.title === ord.bookTitle);
+                if (bIdx !== -1) {
+                    books[bIdx].totalDownloads = (books[bIdx].totalDownloads || 0) + 1;
+                    localStorage.setItem('ebook_inventory', JSON.stringify(books));
+                }
+
+                showToast(`பதிவிறக்கம் செய்யப்பட்டது (${orders[index].downloadCount}/3).`);
+                closeModal('downloadCheckModal');
+            } catch (err) {
+                console.error(err);
+                // Fallback to direct download
+                const link = document.createElement('a');
+                link.href = matchedBook.pdfData;
+                link.download = `${ord.bookTitle}.pdf`;
+                link.click();
+            }
+        }
+
+        function handleSupportSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('supName').value.trim();
+            const phone = document.getElementById('supPhone').value.trim();
+            const utr = document.getElementById('supUtr').value.trim();
+            const msg = document.getElementById('supMsg').value.trim();
+
+            if (phone.length !== 10) {
+                showToast("தயவுசெய்து சரியான 10 இலக்க மொபைல் எண்ணை உள்ளிடவும்!", "error");
+                return;
+            }
+
+            const tickets = JSON.parse(localStorage.getItem('admin_support_tickets') || '[]');
+            tickets.unshift({
+                id: 'TCK-' + Math.floor(1000 + Math.random() * 9000),
+                name, phone, utr: utr || '-', msg,
+                date: new Date().toLocaleDateString('ta-IN'),
+                time: new Date().toLocaleTimeString('en-US', { hour12: true })
+            });
+            localStorage.setItem('admin_support_tickets', JSON.stringify(tickets));
+
+            showToast("உதவி கோரிக்கை அட்மினுக்கு அனுப்பப்பட்டது!");
+            e.target.reset();
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        window.onload = () => {
+            renderSlides();
+            renderBooks();
+        };
+    </script>
+</body>
+</html>

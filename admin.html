@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>அட்மின் போர்ட்டல் | நூல் கூடம்</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style> 
+        body { font-family: 'Plus Jakarta Sans', sans-serif; -webkit-tap-highlight-color: transparent; } 
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        #toast {
+            transform: translateY(-150%) scale(0.85);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #toast.show { transform: translateY(0) scale(1); }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-100 flex min-h-screen text-slate-800 pb-16 lg:pb-0">
+
+    <!-- Pop Notification -->
+    <div id="toast" class="fixed top-4 inset-x-4 sm:inset-x-auto sm:right-6 sm:top-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border text-xs sm:text-sm font-bold bg-white text-slate-800 border-slate-200 opacity-0 pointer-events-none">
+        <div id="toastIcon" class="p-1.5 rounded-full shrink-0"></div>
+        <span id="toastMsg" class="truncate">அறிவிப்பு</span>
+    </div>
+
+    <!-- 1. LOGIN OVERLAY -->
+    <div id="loginScreen" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-100 text-center">
+            <div class="w-12 h-12 bg-indigo-600 text-white rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-indigo-600/30">
+                <i data-lucide="lock" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h2 class="text-xl sm:text-2xl font-black text-slate-900" data-admin-i18n="loginTitle">அட்மின் உள்நுழைவு</h2>
+                <p class="text-[11px] sm:text-xs text-slate-500 mt-1" data-admin-i18n="loginSub">நிர்வாகப் பக்கத்தை அணுக சான்றுகளை உள்ளிடவும்</p>
+            </div>
+            
+            <form onsubmit="handleAdminLogin(event)" class="space-y-3.5 text-left">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1" data-admin-i18n="lblUser">பயனர்பெயர் (Username)</label>
+                    <input type="text" id="adminUser" required placeholder="admin" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-indigo-500 text-xs sm:text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1" data-admin-i18n="lblPass">கடவுச்சொல் (Password)</label>
+                    <input type="password" id="adminPass" required placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-indigo-500 text-xs sm:text-sm">
+                </div>
+                <button type="submit" class="w-full py-2.5 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition text-xs sm:text-sm active:scale-95" data-admin-i18n="btnLogin">
+                    உள்நுழைக
+                </button>
+            </form>
+            <div class="text-[10px] text-slate-400">
+                Default: <span class="font-mono font-bold text-slate-600">admin / admin123</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. ADMIN DASHBOARD WORKSPACE -->
+    <div id="adminApp" class="flex w-full min-h-screen">
+        <!-- Sidebar Navigation (Desktop View) -->
+        <aside class="w-64 bg-slate-900 text-white p-6 hidden lg:flex flex-col justify-between shrink-0 shadow-2xl">
+            <div class="space-y-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30">
+                        <i data-lucide="shield-check" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-black text-lg tracking-tight">நூல் கூடம்</h2>
+                        <span class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Admin Portal</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="space-y-1 text-xs font-semibold">
+                    <button onclick="switchTab('orders-tab', this)" class="tab-btn w-full flex items-center gap-3 py-2.5 px-4 bg-indigo-600 text-white rounded-xl font-bold shadow transition">
+                        <i data-lucide="receipt" class="w-4 h-4"></i>
+                        <span data-admin-i18n="menuOrders">UPI ஆர்டர்கள்</span>
+                    </button>
+
+                    <button onclick="switchTab('coupons-tab', this)" class="tab-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
+                        <i data-lucide="tag" class="w-4 h-4 text-emerald-400"></i>
+                        <span data-admin-i18n="menuCoupons">கூப்பன்கள்</span>
+                    </button>
+
+                    <button onclick="switchTab('slides-tab', this)" class="tab-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i>
+                        <span data-admin-i18n="menuSlides">ஸ்லைடுகள் & AI படம்</span>
+                    </button>
+                    
+                    <button onclick="switchTab('tickets-tab', this)" class="tab-btn w-full flex items-center justify-between py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="headset" class="w-4 h-4 text-cyan-400"></i>
+                            <span data-admin-i18n="menuTickets">உதவி கோரிக்கைகள்</span>
+                        </div>
+                        <span id="badgeTicketCount" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-600 text-white">0</span>
+                    </button>
+
+                    <button onclick="switchTab('fraud-tab', this)" class="tab-btn w-full flex items-center justify-between py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="shield-alert" class="w-4 h-4 text-rose-400"></i>
+                            <span data-admin-i18n="menuFraud">மோசடி எச்சரிக்கை</span>
+                        </div>
+                        <span id="badgeFraudCount" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-600 text-white">0</span>
+                    </button>
+
+                    <button onclick="switchTab('inventory-tab', this)" class="tab-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
+                        <i data-lucide="book-copy" class="w-4 h-4"></i>
+                        <span data-admin-i18n="menuInventory">புத்தகங்கள் & டவுன்லோட்ஸ்</span>
+                    </button>
+                    
+                    <button onclick="switchTab('add-book-tab', this)" class="tab-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        <span data-admin-i18n="menuAddBook">புதிய புத்தகம் சேர்க்க</span>
+                    </button>
+
+                    <button onclick="switchTab('backup-tab', this)" class="tab-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
+                        <i data-lucide="database" class="w-4 h-4 text-indigo-400"></i>
+                        <span data-admin-i18n="menuBackup">Excel & Backup</span>
+                    </button>
+
+                    <button onclick="switchTab('upi-settings-tab', this)" class="tab-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
+                        <i data-lucide="qr-code" class="w-4 h-4"></i>
+                        <span data-admin-i18n="menuUpi">UPI அமைப்புகள்</span>
+                    </button>
+
+                    <button onclick="switchTab('security-settings-tab', this)" class="tab-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
+                        <i data-lucide="key" class="w-4 h-4"></i>
+                        <span data-admin-i18n="menuSecurity">பாதுகாப்பு & கடவுச்சொல்</span>
+                    </button>
+                </nav>
+            </div>
+
+            <div class="space-y-2">
+                <button onclick="adminLogout()" class="w-full flex items-center gap-2 py-2 px-3 text-rose-400 hover:bg-slate-800 rounded-lg text-xs font-bold transition">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    <span data-admin-i18n="btnLogout">வெளியேறு (Logout)</span>
+                </button>
+                <a href="index.html" class="flex items-center gap-2 py-2 px-3 text-slate-400 hover:text-white rounded-lg text-xs font-bold transition">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    <span data-admin-i18n="btnToHome">முகப்புக்குச் செல்க</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Workspace Area -->
+        <main class="flex-1 p-3.5 sm:p-6 lg:p-10 space-y-5 overflow-y-auto w-full max-w-full">
+            
+            <!-- Mobile Top Scrollable Menu -->
+            <div class="lg:hidden flex overflow-x-auto gap-2 pb-1 hide-scrollbar">
+                <button onclick="switchTab('orders-tab', this)" class="tab-btn px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-bold shrink-0">ஆர்டர்கள்</button>
+                <button onclick="switchTab('coupons-tab', this)" class="tab-btn px-3 py-1.5 bg-white text-emerald-600 border border-slate-200 rounded-xl text-xs font-bold shrink-0">கூப்பன்கள்</button>
+                <button onclick="switchTab('slides-tab', this)" class="tab-btn px-3 py-1.5 bg-white text-amber-600 border border-slate-200 rounded-xl text-xs font-bold shrink-0">ஸ்லைடுகள் & AI</button>
+                <button onclick="switchTab('tickets-tab', this)" class="tab-btn px-3 py-1.5 bg-white text-cyan-600 border border-slate-200 rounded-xl text-xs font-bold shrink-0">உதவி</button>
+                <button onclick="switchTab('fraud-tab', this)" class="tab-btn px-3 py-1.5 bg-white text-rose-600 border border-slate-200 rounded-xl text-xs font-bold shrink-0">மோசடி</button>
+                <button onclick="switchTab('inventory-tab', this)" class="tab-btn px-3 py-1.5 bg-white text-slate-700 border border-slate-200 rounded-xl text-xs font-bold shrink-0">புத்தகங்கள்</button>
+                <button onclick="switchTab('add-book-tab', this)" class="tab-btn px-3 py-1.5 bg-white text-slate-700 border border-slate-200 rounded-xl text-xs font-bold shrink-0">+ புத்தகம்</button>
+                <button onclick="switchTab('backup-tab', this)" class="tab-btn px-3 py-1.5 bg-white text-indigo-600 border border-slate-200 rounded-xl text-xs font-bold shrink-0">Excel/Backup</button>
+                <button onclick="switchTab('upi-settings-tab', this)" class="tab-btn px-3 py-1.5 bg-white text-slate-700 border border-slate-200 rounded-xl text-xs font-bold shrink-0">UPI</button>
+                <button onclick="switchTab('security-settings-tab', this)" class="tab-btn px-3 py-1.5 bg-white text-slate-700 border border-slate-200 rounded-xl text-xs font-bold shrink-0">கடவுச்சொல்</button>
+                <button onclick="adminLogout()" class="px-3 py-1.5 bg-rose-100 text-rose-700 rounded-xl text-xs font-bold shrink-0">Logout</button>
+            </div>
+
+            <!-- Top Responsive Header (With Real-Time Clock & Language Switcher) -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                <div>
+                    <h1 class="text-lg sm:text-2xl font-black text-slate-900 tracking-tight" id="currentTabTitle">UPI ஆர்டர்கள்</h1>
+                    <p class="text-slate-500 text-[11px] sm:text-xs mt-0.5" data-admin-i18n="adminDesc">முழுமையான நிர்வாக மேலாண்மை மற்றும் கட்டுப்பாட்டுப் பலகை.</p>
+                </div>
+                
+                <div class="flex items-center justify-between w-full sm:w-auto gap-2 sm:gap-4">
+                    <!-- Real-Time Date & Clock Component -->
+                    <div class="flex flex-col text-left sm:text-right bg-slate-50 sm:bg-transparent p-2 sm:p-0 rounded-xl border sm:border-0 border-slate-200">
+                        <span id="adminLiveDate" class="text-[10px] sm:text-xs font-bold text-slate-500"></span>
+                        <span id="adminLiveClock" class="text-xs sm:text-sm font-black text-indigo-600 font-mono tracking-wide"></span>
+                    </div>
+
+                    <div class="flex items-center gap-2 shrink-0">
+                        <!-- Dual Language Toggle Button -->
+                        <button onclick="toggleAdminLanguage()" class="px-2.5 py-1.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition flex items-center gap-1.5 bg-white shadow-sm">
+                            <i data-lucide="languages" class="w-3.5 h-3.5 text-indigo-600"></i>
+                            <span id="adminLangBtnText">EN</span>
+                        </button>
+
+                        <button onclick="renderAll()" class="p-2 sm:px-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5 shrink-0" title="புதுப்பி">
+                            <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline" data-admin-i18n="btnRefresh">புதுப்பி</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metric Cards (Responsive Grid) -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
+                <div class="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+                    <div class="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl shrink-0"><i data-lucide="indian-rupee" class="w-5 h-5"></i></div>
+                    <div class="min-w-0">
+                        <span class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase truncate block" data-admin-i18n="statRev">வருவாய்</span>
+                        <h3 id="statRevenue" class="text-base sm:text-xl font-black text-slate-900 truncate">₹0</h3>
+                    </div>
+                </div>
+                <div class="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+                    <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl shrink-0"><i data-lucide="shopping-bag" class="w-5 h-5"></i></div>
+                    <div class="min-w-0">
+                        <span class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase truncate block" data-admin-i18n="statOrd">ஆர்டர்கள்</span>
+                        <h3 id="statOrders" class="text-base sm:text-xl font-black text-slate-900 truncate">0</h3>
+                    </div>
+                </div>
+                <div class="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+                    <div class="p-2.5 bg-rose-50 text-rose-600 rounded-xl shrink-0"><i data-lucide="shield-alert" class="w-5 h-5"></i></div>
+                    <div class="min-w-0">
+                        <span class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase truncate block" data-admin-i18n="statFraud">மோசடிகள்</span>
+                        <h3 id="statFraudCount" class="text-base sm:text-xl font-black text-rose-600 truncate">0</h3>
+                    </div>
+                </div>
+                <div class="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+                    <div class="p-2.5 bg-cyan-50 text-cyan-600 rounded-xl shrink-0"><i data-lucide="headset" class="w-5 h-5"></i></div>
+                    <div class="min-w-0">
+                        <span class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase truncate block" data-admin-i18n="statTickets">உதவி கோரிக்கை</span>
+                        <h3 id="statTicketCount" class="text-base sm:text-xl font-black text-cyan-600 truncate">0</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 1: Orders Section -->
+            <section id="orders-tab" class="tab-content active bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-sm space-y-4">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="list-checks" class="w-4 h-4 text-indigo-600"></i>
+                        <span data-admin-i18n="tblOrdersHead">வாடிக்கையாளர் ஆர்டர்கள்</span>
+                    </h2>
+                    <button onclick="clearCompletedOrders()" class="text-[11px] text-rose-600 font-bold hover:underline" data-admin-i18n="btnClearDone">முடிந்தவற்றை நீக்கு</button>
+                </div>
+
+                <div class="overflow-x-auto -mx-4 sm:mx-0">
+                    <table class="w-full text-left text-xs min-w-[750px]">
+                        <thead>
+                            <tr class="border-b border-slate-100 text-slate-400 text-[10px] sm:text-[11px] uppercase">
+                                <th class="py-2.5 px-3">ஆர்டர் ID</th>
+                                <th class="py-2.5 px-3">வாடிக்கையாளர்</th>
+                                <th class="py-2.5 px-3">மொபைல்</th>
+                                <th class="py-2.5 px-3">புத்தகம்</th>
+                                <th class="py-2.5 px-3">தொகை</th>
+                                <th class="py-2.5 px-3">UTR எண்</th>
+                                <th class="py-2.5 px-3">டவுன்லோட்ஸ்</th>
+                                <th class="py-2.5 px-3">நிலை</th>
+                                <th class="py-2.5 px-3 text-right">செயல்பாடுகள்</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TAB 2: Coupons Section -->
+            <section id="coupons-tab" class="tab-content bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-sm space-y-5">
+                <div>
+                    <h2 class="text-sm sm:text-base font-bold text-emerald-700 flex items-center gap-2">
+                        <i data-lucide="tag" class="w-4 h-4 text-emerald-600"></i> 
+                        <span data-admin-i18n="tblCouponsHead">தள்ளுபடி கூப்பன்கள் மேலாண்மை</span>
+                    </h2>
+                    <p class="text-[11px] text-slate-500 mt-0.5">புதிய கூப்பன் குறியீடுகளை உருவாக்கி தள்ளுபடி வழங்கலாம்.</p>
+                </div>
+
+                <form onsubmit="handleCreateCoupon(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">கூப்பன் குறியீடு (Code)</label>
+                        <input type="text" id="newCouponCode" required placeholder="SAVE50" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl font-mono uppercase">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">தள்ளுபடி சதவீதம் (%)</label>
+                        <input type="number" id="newCouponPercent" required placeholder="50" min="1" max="100" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl">
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow active:scale-95">கூப்பன் சேர்</button>
+                    </div>
+                </form>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="border-b border-slate-100 text-slate-400 text-[10px] uppercase">
+                                <th class="py-2 px-3">குறியீடு</th>
+                                <th class="py-2 px-3">தள்ளுபடி</th>
+                                <th class="py-2 px-3 text-right">செயல்பாடு</th>
+                            </tr>
+                        </thead>
+                        <tbody id="couponsTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TAB 3: Slide Manager & AI Image Generator -->
+            <section id="slides-tab" class="tab-content bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-sm space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                    <div>
+                        <h2 class="text-sm sm:text-base font-bold text-amber-600 flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i>
+                            <span>ஸ்லைடுகள் & AI படம் உருவாக்குதல்</span>
+                        </h2>
+                    </div>
+                    <button onclick="resetDefaultSlides()" class="text-[11px] text-indigo-600 font-bold hover:underline">இயல்புநிலைக்கு மாற்று</button>
+                </div>
+                <div id="slidesEditContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5"></div>
+            </section>
+
+            <!-- TAB 4: Support Tickets -->
+            <section id="tickets-tab" class="tab-content bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-sm space-y-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-sm sm:text-base font-bold text-cyan-700 flex items-center gap-2">
+                            <i data-lucide="headset" class="w-4 h-4 text-cyan-600"></i>
+                            <span>வாடிக்கையாளர் உதவி கோரிக்கைகள் (Support Tickets)</span>
+                        </h2>
+                    </div>
+                    <button onclick="clearSupportTickets()" class="text-[11px] text-rose-600 font-bold hover:underline">அனைத்தையும் அழி</button>
+                </div>
+
+                <div class="overflow-x-auto -mx-4 sm:mx-0">
+                    <table class="w-full text-left text-xs min-w-[650px]">
+                        <thead>
+                            <tr class="border-b border-slate-100 text-slate-400 text-[10px] uppercase">
+                                <th class="py-2.5 px-3">ID</th>
+                                <th class="py-2.5 px-3">பெயர்</th>
+                                <th class="py-2.5 px-3">மொபைல்</th>
+                                <th class="py-2.5 px-3">UTR</th>
+                                <th class="py-2.5 px-3">விளக்கம்</th>
+                                <th class="py-2.5 px-3">தேதி</th>
+                                <th class="py-2.5 px-3 text-right">தொடர்பு</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ticketsTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TAB 5: Fraud Alerts -->
+            <section id="fraud-tab" class="tab-content bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-sm space-y-4">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-sm sm:text-base font-bold text-rose-600 flex items-center gap-2">
+                        <i data-lucide="shield-alert" class="w-4 h-4 text-rose-600"></i>
+                        <span>மோசடி எச்சரிக்கை பலகை</span>
+                    </h2>
+                    <button onclick="clearFraudLogs()" class="text-[11px] text-rose-600 font-bold hover:underline">அழி</button>
+                </div>
+                <div class="overflow-x-auto -mx-4 sm:mx-0">
+                    <table class="w-full text-left text-xs min-w-[700px]">
+                        <thead>
+                            <tr class="border-b border-slate-100 text-slate-400 text-[10px] uppercase">
+                                <th class="py-2.5 px-3">ID</th>
+                                <th class="py-2.5 px-3">பெயர்</th>
+                                <th class="py-2.5 px-3">மொபைல்</th>
+                                <th class="py-2.5 px-3">மின்னஞ்சல்</th>
+                                <th class="py-2.5 px-3">முயன்ற UTR</th>
+                                <th class="py-2.5 px-3">எச்சரிக்கை</th>
+                                <th class="py-2.5 px-3 text-right">செயல்பாடு</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fraudTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TAB 6: Inventory -->
+            <section id="inventory-tab" class="tab-content bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-sm space-y-4">
+                <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="library" class="w-4 h-4 text-indigo-600"></i>
+                    <span>புத்தகங்கள் பட்டியல் & பதிவிறக்கங்கள்</span>
+                </h2>
+                <div id="adminBooksList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+            </section>
+
+            <!-- TAB 7: Add Book Form -->
+            <section id="add-book-tab" class="tab-content bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-sm max-w-2xl space-y-4">
+                <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="plus-circle" class="w-4 h-4 text-indigo-600"></i> 
+                    <span>புதிய மின்னூல் சேர்த்தல்</span>
+                </h2>
+                <form id="addBookForm" onsubmit="handleAddNewBook(event)" class="space-y-3 text-xs sm:text-sm">
+                    <div>
+                        <label class="block font-bold text-slate-700 uppercase mb-1">புத்தகத்தின் பெயர் <span class="text-rose-500">*</span></label>
+                        <input type="text" id="newBookTitle" required placeholder="எ.கா: வணிக மேலாண்மை" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 uppercase mb-1">ஆசிரியர் பெயர் <span class="text-rose-500">*</span></label>
+                        <input type="text" id="newBookAuthor" required placeholder="முனைவர் ராமகிருஷ்ணன்" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-indigo-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-bold text-slate-700 uppercase mb-1">அசல் விலை (₹) <span class="text-rose-500">*</span></label>
+                            <input type="number" id="newBookOrigPrice" required placeholder="399" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 uppercase mb-1">விற்பனை விலை (₹) <span class="text-rose-500">*</span></label>
+                            <input type="number" id="newBookPrice" required placeholder="149" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                        </div>
+                    </div>
+                    <div class="p-3 bg-indigo-50/60 border border-indigo-100 rounded-xl space-y-1">
+                        <label class="block font-bold text-indigo-950 uppercase text-xs">PDF கோப்பு பதிவேற்றம் <span class="text-rose-500">*</span></label>
+                        <input type="file" id="newBookPdfFile" accept=".pdf" required class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white cursor-pointer">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block font-bold text-slate-700 uppercase text-xs">அட்டைப் படம் (Cover Image)</label>
+                        <input type="file" id="newBookCoverFile" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-slate-200 file:text-slate-700 cursor-pointer">
+                        <input type="url" id="newBookCoverUrl" placeholder="அல்லது Image URL..." class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 uppercase mb-1">மாதிரி வாசிப்பு விவரம்</label>
+                        <textarea id="newBookPreview" rows="2" placeholder="புத்தகத்தின் மாதிரி வரிகள்..." class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-indigo-500"></textarea>
+                    </div>
+                    <button type="submit" id="submitBtn" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow flex items-center justify-center gap-1.5 active:scale-95">
+                        <i data-lucide="check" class="w-4 h-4"></i> <span>இணையதளத்தில் சேர்க்கவும்</span>
+                    </button>
+                </form>
+            </section>
+
+            <!-- TAB 8: Backup & CSV Export -->
+            <section id="backup-tab" class="tab-content bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-sm space-y-5">
+                <div>
+                    <h2 class="text-sm sm:text-base font-bold text-indigo-700 flex items-center gap-2">
+                        <i data-lucide="database" class="w-4 h-4 text-indigo-600"></i> தரவு மேலாண்மை & Backup
+                    </h2>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                        <h4 class="font-bold text-xs sm:text-sm text-slate-800 flex items-center gap-1.5">
+                            <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i> Excel (CSV) வடிவில் பதிவிறக்கு
+                        </h4>
+                        <p class="text-[11px] text-slate-500">ஆர்டர்கள் மற்றும் வாடிக்கையாளர் எண்களை எக்செல் ஷீட்டாக எடுக்கலாம்.</p>
+                        <button onclick="exportOrdersToCSV()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow flex items-center gap-1.5">
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i> CSV பதிவிறக்கு
+                        </button>
+                    </div>
+
+                    <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                        <h4 class="font-bold text-xs sm:text-sm text-slate-800 flex items-center gap-1.5">
+                            <i data-lucide="archive" class="w-4 h-4 text-indigo-600"></i> முழு டேட்டா பேக்கப் (JSON)
+                        </h4>
+                        <p class="text-[11px] text-slate-500">தளத்தின் ஒட்டுமொத்த டேட்டாவையும் JSON கோப்பாக சேமித்து வைத்துக்கொள்ளலாம்.</p>
+                        <button onclick="exportFullBackupJSON()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition shadow flex items-center gap-1.5">
+                            <i data-lucide="download-cloud" class="w-3.5 h-3.5"></i> Backup JSON சேமி
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 9: UPI Settings -->
+            <section id="upi-settings-tab" class="tab-content bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-sm max-w-xl space-y-4">
+                <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="qr-code" class="w-4 h-4 text-indigo-600"></i> UPI கட்டண அமைப்புகள்
+                </h2>
+                <form onsubmit="handleSaveUpiSettings(event)" class="space-y-3.5 text-xs sm:text-sm">
+                    <div>
+                        <label class="block font-bold text-slate-700 uppercase mb-1">UPI ID (GPay / PhonePe / Paytm)</label>
+                        <input type="text" id="adminUpiId" required placeholder="9876543210@upi" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white font-mono">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 uppercase mb-1">கடையின் பெயர்</label>
+                        <input type="text" id="adminStoreName" required placeholder="நூல் கூடம் Store" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                    </div>
+                    <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow flex items-center gap-1.5 active:scale-95">
+                        <i data-lucide="save" class="w-3.5 h-3.5"></i> <span>அமைப்புகளைச் சேமி</span>
+                    </button>
+                </form>
+            </section>
+
+            <!-- TAB 10: Security -->
+            <section id="security-settings-tab" class="tab-content bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-sm max-w-xl space-y-4">
+                <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="key" class="w-4 h-4 text-indigo-600"></i> அட்மின் கடவுச்சொல் மாற்றுதல்
+                </h2>
+                <form onsubmit="handleChangePassword(event)" class="space-y-3.5 text-xs sm:text-sm">
+                    <div>
+                        <label class="block font-bold text-slate-700 uppercase mb-1">புதிய பயனர்பெயர்</label>
+                        <input type="text" id="newAdminUser" required class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 uppercase mb-1">புதிய கடவுச்சொல்</label>
+                        <input type="password" id="newAdminPass" required minlength="6" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                    </div>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow flex items-center gap-1.5 active:scale-95">
+                        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> <span>கடவுச்சொல்லைப் புதுப்பி</span>
+                    </button>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <!-- Edit Book Modal -->
+    <div id="editBookModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-7 space-y-3 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('editBookModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="flex items-center gap-2">
+                <div class="p-2 bg-amber-50 text-amber-600 rounded-xl"><i data-lucide="edit" class="w-4 h-4"></i></div>
+                <h3 class="text-sm sm:text-base font-bold text-slate-900">புத்தகத்தைத் திருத்துக</h3>
+            </div>
+            <form onsubmit="handleUpdateBook(event)" class="space-y-2.5 text-xs">
+                <input type="hidden" id="editBookIndex">
+                <div><label class="block font-bold text-slate-700 mb-0.5">தலைப்பு</label><input type="text" id="editTitle" required class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl"></div>
+                <div><label class="block font-bold text-slate-700 mb-0.5">ஆசிரியர்</label><input type="text" id="editAuthor" required class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl"></div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div><label class="block font-bold text-slate-700 mb-0.5">அசல் விலை</label><input type="number" id="editOrigPrice" required class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl"></div>
+                    <div><label class="block font-bold text-slate-700 mb-0.5">விற்பனை விலை</label><input type="number" id="editPrice" required class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl"></div>
+                </div>
+                <div><label class="block font-bold text-slate-700 mb-0.5">அட்டைப் படம் URL</label><input type="url" id="editCover" required class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl"></div>
+                <div><label class="block font-bold text-slate-700 mb-0.5">மாதிரி விளக்கம்</label><textarea id="editPreview" rows="2" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl"></textarea></div>
+                <button type="submit" class="w-full py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition shadow">மாற்றங்களைச் சேமி</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Dual Language Dictionary for Admin Page
+        let currentAdminLang = localStorage.getItem('admin_lang') || 'ta';
+
+        const adminTranslations = {
+            ta: {
+                loginTitle: "அட்மின் உள்நுழைவு",
+                loginSub: "நிர்வாகப் பக்கத்தை அணுக சான்றுகளை உள்ளிடவும்",
+                lblUser: "பயனர்பெயர் (Username)",
+                lblPass: "கடவுச்சொல் (Password)",
+                btnLogin: "உள்நுழைக",
+                adminDesc: "முழுமையான நிர்வாக மேலாண்மை மற்றும் கட்டுப்பாட்டுப் பலகை.",
+                menuOrders: "UPI ஆர்டர்கள்",
+                menuCoupons: "கூப்பன்கள்",
+                menuSlides: "ஸ்லைடுகள் & AI படம்",
+                menuTickets: "உதவி கோரிக்கைகள்",
+                menuFraud: "மோசடி எச்சரிக்கை",
+                menuInventory: "புத்தகங்கள் & டவுன்லோட்ஸ்",
+                menuAddBook: "புதிய புத்தகம் சேர்க்க",
+                menuBackup: "Excel & Backup",
+                menuUpi: "UPI அமைப்புகள்",
+                menuSecurity: "பாதுகாப்பு & கடவுச்சொல்",
+                btnLogout: "வெளியேறு (Logout)",
+                btnToHome: "முகப்புக்குச் செல்க",
+                btnRefresh: "புதுப்பி",
+                statRev: "வருவாய்",
+                statOrd: "ஆர்டர்கள்",
+                statFraud: "மோசடிகள்",
+                statTickets: "உதவி கோரிக்கை",
+                tblOrdersHead: "வாடிக்கையாளர் ஆர்டர்கள்",
+                tblCouponsHead: "தள்ளுபடி கூப்பன்கள் மேலாண்மை",
+                btnClearDone: "முடிந்தவற்றை நீக்கு"
+            },
+            en: {
+                loginTitle: "Admin Portal Sign In",
+                loginSub: "Enter valid credentials to access admin dashboard",
+                lblUser: "Username",
+                lblPass: "Password",
+                btnLogin: "Sign In",
+                adminDesc: "Complete operational management and store oversight.",
+                menuOrders: "UPI Orders",
+                menuCoupons: "Discount Coupons",
+                menuSlides: "Slides & AI Visuals",
+                menuTickets: "Support Tickets",
+                menuFraud: "Fraud Alerts",
+                menuInventory: "Books Inventory",
+                menuAddBook: "Add New E-Book",
+                menuBackup: "Excel & Backup",
+                menuUpi: "UPI Settings",
+                menuSecurity: "Security & Password",
+                btnLogout: "Logout",
+                btnToHome: "Go to Storefront",
+                btnRefresh: "Refresh",
+                statRev: "Revenue",
+                statOrd: "Orders",
+                statFraud: "Fraud Logs",
+                statTickets: "Tickets",
+                tblOrdersHead: "Customer Order Verification",
+                tblCouponsHead: "Discount Coupons Manager",
+                btnClearDone: "Clear Finished"
+            }
+        };
+
+        function toggleAdminLanguage() {
+            currentAdminLang = currentAdminLang === 'ta' ? 'en' : 'ta';
+            localStorage.setItem('admin_lang', currentAdminLang);
+            applyAdminLanguage();
+        }
+
+        function applyAdminLanguage() {
+            document.getElementById('adminLangBtnText').innerText = currentAdminLang === 'ta' ? 'EN' : 'தமிழ்';
+            document.querySelectorAll('[data-admin-i18n]').forEach(el => {
+                const k = el.getAttribute('data-admin-i18n');
+                if (adminTranslations[currentAdminLang][k]) {
+                    el.innerText = adminTranslations[currentAdminLang][k];
+                }
+            });
+            updateAdminClock();
+        }
+
+        // Live Date & Clock Engine
+        function updateAdminClock() {
+            const now = new Date();
+            const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            const dEl = document.getElementById('adminLiveDate');
+            const cEl = document.getElementById('adminLiveClock');
+            if (dEl) dEl.innerText = now.toLocaleDateString(currentAdminLang === 'ta' ? 'ta-IN' : 'en-US', dateOptions);
+            if (cEl) cEl.innerText = now.toLocaleTimeString('en-US', { hour12: true });
+        }
+        setInterval(updateAdminClock, 1000);
+        updateAdminClock();
+
+        function getAdminCredentials() {
+            const creds = JSON.parse(localStorage.getItem('admin_credentials') || '{}');
+            return {
+                username: creds.username || 'admin',
+                password: creds.password || 'admin123'
+            };
+        }
+
+        function checkSession() {
+            const isAuth = sessionStorage.getItem('admin_authenticated');
+            if (isAuth === 'true') {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('adminApp').classList.remove('blur-sm');
+                renderAll();
+            } else {
+                document.getElementById('loginScreen').classList.remove('hidden');
+                document.getElementById('adminApp').classList.add('blur-sm');
+            }
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('adminUser').value.trim();
+            const p = document.getElementById('adminPass').value.trim();
+            const creds = getAdminCredentials();
+
+            if (u === creds.username && p === creds.password) {
+                sessionStorage.setItem('admin_authenticated', 'true');
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('adminApp').classList.remove('blur-sm');
+                showToast('அட்மின் உள்நுழைவு வெற்றிகரமாக முடிந்தது!');
+                renderAll();
+            } else {
+                alert('தவறான பயனர்பெயர் அல்லது கடவுச்சொல்!');
+            }
+        }
+
+        function adminLogout() {
+            sessionStorage.removeItem('admin_authenticated');
+            checkSession();
+        }
+
+        function handleChangePassword(e) {
+            e.preventDefault();
+            const newU = document.getElementById('newAdminUser').value.trim();
+            const newP = document.getElementById('newAdminPass').value.trim();
+            localStorage.setItem('admin_credentials', JSON.stringify({ username: newU, password: newP }));
+            showToast('புதிய சான்றுகள் சேமிக்கப்பட்டன!');
+            e.target.reset();
+        }
+
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMsg.innerText = msg;
+            if (type === 'success') {
+                toast.className = "fixed top-4 inset-x-4 sm:inset-x-auto sm:right-6 sm:top-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border text-xs sm:text-sm font-bold bg-emerald-50 text-emerald-800 border-emerald-200 show";
+                toastIcon.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5 text-emerald-600"></i>`;
+            } else {
+                toast.className = "fixed top-4 inset-x-4 sm:inset-x-auto sm:right-6 sm:top-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border text-xs sm:text-sm font-bold bg-rose-50 text-rose-800 border-rose-200 show";
+                toastIcon.innerHTML = `<i data-lucide="alert-circle" class="w-5 h-5 text-rose-600"></i>`;
+            }
+            lucide.createIcons();
+            setTimeout(() => toast.classList.remove('show'), 3500);
+        }
+
+        function switchTab(tabId, btnElement) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = "tab-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl text-xs font-bold transition";
+            });
+
+            if (btnElement) {
+                btnElement.className = "tab-btn w-full flex items-center gap-3 py-2.5 px-4 bg-indigo-600 text-white rounded-xl text-xs font-bold shadow-md transition";
+            }
+
+            const titles = {
+                'orders-tab': 'UPI ஆர்டர்கள்',
+                'coupons-tab': 'கூப்பன்கள் மேலாண்மை',
+                'slides-tab': 'ஸ்லைடுகள் & AI படம்',
+                'tickets-tab': 'உதவி கோரிக்கைகள் (Support)',
+                'fraud-tab': 'மோசடி எச்சரிக்கை பலகை',
+                'inventory-tab': 'புத்தகங்கள் & டவுன்லோட்ஸ்',
+                'add-book-tab': 'புதிய புத்தகம் சேர்க்க',
+                'backup-tab': 'Excel & Backup',
+                'upi-settings-tab': 'UPI கட்டண அமைப்புகள்',
+                'security-settings-tab': 'பாதுகாப்பு & கடவுச்சொல்'
+            };
+            document.getElementById('currentTabTitle').innerText = titles[tabId];
+        }
+
+        function exportOrdersToCSV() {
+            const orders = JSON.parse(localStorage.getItem('ebook_orders') || '[]');
+            if (orders.length === 0) {
+                showToast("ஏற்றுமதி செய்ய ஆர்டர்கள் ஏதுமில்லை!", "error");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Order ID,Customer Name,Mobile,Book Title,Amount,UTR,Status,Date\n";
+
+            orders.forEach(o => {
+                csvContent += `"${o.id}","${o.customerName}","${o.customerMobile}","${o.bookTitle}","${o.amount}","${o.utr}","${o.status}","${o.date}"\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `NoolKoodam_Orders_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("Excel (CSV) கோப்பு பதிவிறக்கம் செய்யப்பட்டது!");
+        }
+
+        function exportFullBackupJSON() {
+            const backupData = {
+                orders: JSON.parse(localStorage.getItem('ebook_orders') || '[]'),
+                books: JSON.parse(localStorage.getItem('ebook_inventory') || '[]'),
+                coupons: JSON.parse(localStorage.getItem('admin_coupons_data') || '[]'),
+                tickets: JSON.parse(localStorage.getItem('admin_support_tickets') || '[]'),
+                slides: JSON.parse(localStorage.getItem('admin_slides_data') || '[]'),
+                upi: JSON.parse(localStorage.getItem('admin_upi_settings') || '{}')
+            };
+
+            const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `NoolKoodam_Full_Backup_${new Date().toISOString().slice(0,10)}.json`;
+            link.click();
+            showToast("முழு Backup JSON கோப்பாக சேமிக்கப்பட்டது!");
+        }
+
+        function handleCreateCoupon(e) {
+            e.preventDefault();
+            const code = document.getElementById('newCouponCode').value.trim().toUpperCase();
+            const percent = Number(document.getElementById('newCouponPercent').value);
+
+            const coupons = JSON.parse(localStorage.getItem('admin_coupons_data') || '[]');
+            coupons.push({ code, percent });
+            localStorage.setItem('admin_coupons_data', JSON.stringify(coupons));
+            
+            showToast(`கூப்பன் ${code} உருவாக்கப்பட்டது!`);
+            e.target.reset();
+            renderCoupons();
+        }
+
+        function renderCoupons() {
+            const tableBody = document.getElementById('couponsTableBody');
+            const coupons = JSON.parse(localStorage.getItem('admin_coupons_data') || '[]');
+
+            if (coupons.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="3" class="py-4 text-center text-slate-400">கூப்பன்கள் ஏதுமில்லை.</td></tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = coupons.map((c, idx) => `
+                <tr>
+                    <td class="py-2 px-3 font-mono font-bold text-indigo-600">${c.code}</td>
+                    <td class="py-2 px-3 font-bold">${c.percent}% OFF</td>
+                    <td class="py-2 px-3 text-right">
+                        <button onclick="deleteCoupon(${idx})" class="text-rose-500 hover:underline">நீக்கு</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function deleteCoupon(idx) {
+            const coupons = JSON.parse(localStorage.getItem('admin_coupons_data') || '[]');
+            coupons.splice(idx, 1);
+            localStorage.setItem('admin_coupons_data', JSON.stringify(coupons));
+            renderCoupons();
+            showToast("கூப்பன் நீக்கப்பட்டது.");
+        }
+
+        function renderOrders() {
+            const tableBody = document.getElementById('ordersTableBody');
+            const orders = JSON.parse(localStorage.getItem('ebook_orders') || '[]');
+
+            let totalRev = 0;
+            orders.forEach(o => {
+                if (o.status === 'அனுப்பப்பட்டது') totalRev += Number(o.amount);
+            });
+
+            document.getElementById('statRevenue').innerText = '₹' + totalRev;
+            document.getElementById('statOrders').innerText = orders.length;
+
+            if (orders.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="9" class="py-6 text-center text-slate-400 text-xs">ஆர்டர்கள் ஏதுமில்லை.</td></tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = orders.map((ord, idx) => {
+                let badgeClass = "bg-amber-100 text-amber-700";
+                if (ord.status === 'அனுப்பப்பட்டது') badgeClass = "bg-emerald-100 text-emerald-700";
+                else if (ord.status === 'நிராகரிக்கப்பட்டது') badgeClass = "bg-rose-100 text-rose-700";
+
+                return `
+                    <tr class="hover:bg-slate-50 transition text-xs">
+                        <td class="py-2.5 px-3 font-bold text-indigo-600">${ord.id}</td>
+                        <td class="py-2.5 px-3 font-bold text-slate-800">${ord.customerName || 'பயனர்'}</td>
+                        <td class="py-2.5 px-3 font-mono">${ord.customerMobile || '-'}</td>
+                        <td class="py-2.5 px-3 truncate max-w-[130px]">${ord.bookTitle}</td>
+                        <td class="py-2.5 px-3 font-bold">₹${ord.amount}</td>
+                        <td class="py-2.5 px-3"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[11px] font-mono font-bold">${ord.utr}</span></td>
+                        <td class="py-2.5 px-3">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${ord.downloadCount >= 3 ? 'bg-rose-100 text-rose-700' : 'bg-indigo-50 text-indigo-700'}">
+                                ${ord.downloadCount || 0}/3
+                            </span>
+                        </td>
+                        <td class="py-2.5 px-3">
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${badgeClass}">
+                                ${ord.status}
+                            </span>
+                        </td>
+                        <td class="py-2.5 px-3 text-right">
+                            ${ord.status === 'சரிபார்க்கப்பட வேண்டும்' ? `
+                                <div class="flex items-center justify-end gap-1">
+                                    <button onclick="approveOrder(${idx})" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[11px] font-bold transition">அனுமதி</button>
+                                    <button onclick="rejectOrder(${idx})" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-md text-[11px] font-bold transition">நிராகரி</button>
+                                </div>
+                            ` : `
+                                <div class="flex items-center justify-end gap-1">
+                                    <span class="text-[11px] text-slate-400 font-bold">${ord.status}</span>
+                                    <a href="https://wa.me/91${ord.customerMobile}?text=${encodeURIComponent('வணக்கம் ' + ord.customerName + ', உங்கள் புத்தகம் (' + ord.bookTitle + ') அனுமதிக்கப்பட்டது! தளத்தில் இருந்து பதிவிறக்கலாம்.')}" target="_blank" class="p-1 text-emerald-600 hover:bg-emerald-50 rounded" title="WhatsApp Alert"><i data-lucide="send" class="w-3.5 h-3.5"></i></a>
+                                </div>
+                            `}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function approveOrder(idx) {
+            const orders = JSON.parse(localStorage.getItem('ebook_orders') || '[]');
+            orders[idx].status = 'அனுப்பப்பட்டது';
+            localStorage.setItem('ebook_orders', JSON.stringify(orders));
+            showToast(`ஆர்டர் ${orders[idx].id} அனுமதிக்கப்பட்டது!`);
+            renderOrders();
+        }
+
+        function rejectOrder(idx) {
+            if (!confirm('இந்த ஆர்டரை நிராகரிக்கவா?')) return;
+            const orders = JSON.parse(localStorage.getItem('ebook_orders') || '[]');
+            orders[idx].status = 'நிராகரிக்கப்பட்டது';
+            localStorage.setItem('ebook_orders', JSON.stringify(orders));
+            showToast(`ஆர்டர் நிராகரிக்கப்பட்டது!`, 'error');
+            renderOrders();
+        }
+
+        function clearCompletedOrders() {
+            if (!confirm('முடிந்த ஆர்டர்களை நீக்கவா?')) return;
+            const orders = JSON.parse(localStorage.getItem('ebook_orders') || '[]');
+            const activeOnly = orders.filter(o => o.status === 'சரிபார்க்கப்பட வேண்டும்');
+            localStorage.setItem('ebook_orders', JSON.stringify(activeOnly));
+            showToast('பழைய ஆர்டர்கள் நீக்கப்பட்டன.');
+            renderOrders();
+        }
+
+        function renderSupportTickets() {
+            const tableBody = document.getElementById('ticketsTableBody');
+            const tickets = JSON.parse(localStorage.getItem('admin_support_tickets') || '[]');
+
+            document.getElementById('statTicketCount').innerText = tickets.length;
+            document.getElementById('badgeTicketCount').innerText = tickets.length;
+
+            if (tickets.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400 text-xs">எந்த உதவி கோரிக்கைகளும் இல்லை.</td></tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = tickets.map((t) => `
+                <tr class="hover:bg-slate-50 transition text-xs">
+                    <td class="py-2.5 px-3 font-bold text-emerald-600 font-mono">${t.id}</td>
+                    <td class="py-2.5 px-3 font-bold text-slate-800">${t.name}</td>
+                    <td class="py-2.5 px-3 font-mono font-bold text-indigo-600">${t.phone}</td>
+                    <td class="py-2.5 px-3 font-mono">${t.utr || '-'}</td>
+                    <td class="py-2.5 px-3 text-slate-600 max-w-[200px] truncate" title="${t.msg}">${t.msg}</td>
+                    <td class="py-2.5 px-3 text-slate-400 text-[11px]">${t.date}</td>
+                    <td class="py-2.5 px-3 text-right">
+                        <div class="flex items-center justify-end gap-1.5">
+                            <a href="https://wa.me/91${t.phone}?text=${encodeURIComponent('வணக்கம் ' + t.name + ', உதவி கோரிக்கை (' + t.id + ') தொடர்பாகத் தொடர்புகொள்கிறோம்.')}" target="_blank" class="px-2 py-1 bg-emerald-600 text-white rounded-md text-[10px] font-bold hover:bg-emerald-700 flex items-center gap-1">
+                                <i data-lucide="message-circle" class="w-3 h-3"></i> WhatsApp
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function clearSupportTickets() {
+            if (!confirm('உதவி கோரிக்கைகளை அழிக்கவா?')) return;
+            localStorage.removeItem('admin_support_tickets');
+            showToast('உதவி கோரிக்கைகள் அழிக்கப்பட்டன.');
+            renderSupportTickets();
+        }
+
+        function renderFraudAlerts() {
+            const tableBody = document.getElementById('fraudTableBody');
+            const fraudList = JSON.parse(localStorage.getItem('admin_fraud_alerts') || '[]');
+            const blockedUsers = JSON.parse(localStorage.getItem('admin_blocked_users') || '[]');
+
+            document.getElementById('statFraudCount').innerText = fraudList.length;
+            document.getElementById('badgeFraudCount').innerText = fraudList.length;
+
+            if (fraudList.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400 text-xs">மோசடி எச்சரிக்கைகள் ஏதுமில்லை.</td></tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = fraudList.map((frd) => {
+                const isBlocked = blockedUsers.some(b => b.email === frd.email || b.mobile === frd.mobile);
+
+                return `
+                    <tr class="hover:bg-rose-50/50 transition text-xs">
+                        <td class="py-2.5 px-3 font-bold text-rose-600 font-mono">${frd.id}</td>
+                        <td class="py-2.5 px-3 font-bold text-slate-800">${frd.name}</td>
+                        <td class="py-2.5 px-3 font-mono">${frd.mobile}</td>
+                        <td class="py-2.5 px-3 font-mono text-[11px]">${frd.email}</td>
+                        <td class="py-2.5 px-3"><span class="bg-rose-100 text-rose-800 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold">${frd.lastUtr}</span></td>
+                        <td class="py-2.5 px-3">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${frd.attempts >= 2 ? 'bg-rose-600 text-white animate-pulse' : 'bg-amber-100 text-amber-800'}">
+                                ${frd.attempts} முறை
+                            </span>
+                        </td>
+                        <td class="py-2.5 px-3 text-right">
+                            ${isBlocked ? `
+                                <button onclick="unblockUser('${frd.email}', '${frd.mobile}')" class="px-2.5 py-1 bg-slate-200 text-slate-700 rounded-md text-[10px] font-bold">Unblock</button>
+                            ` : `
+                                <button onclick="blockUser('${frd.email}', '${frd.mobile}', '${frd.name}')" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-md text-[10px] font-bold ml-auto flex items-center gap-1">
+                                    <i data-lucide="ban" class="w-3 h-3"></i> பிளாக்
+                                </button>
+                            `}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        function blockUser(email, mobile, name) {
+            if (!confirm(`நிச்சயமாக ${name} (${mobile}) என்பவரை பிளாக் செய்யவா?`)) return;
+            const blockedUsers = JSON.parse(localStorage.getItem('admin_blocked_users') || '[]');
+            blockedUsers.push({ email, mobile, name, date: new Date().toLocaleDateString('ta-IN') });
+            localStorage.setItem('admin_blocked_users', JSON.stringify(blockedUsers));
+            showToast(`${name} பிளாக் செய்யப்பட்டார்!`, 'error');
+            renderFraudAlerts();
+        }
+
+        function unblockUser(email, mobile) {
+            let blockedUsers = JSON.parse(localStorage.getItem('admin_blocked_users') || '[]');
+            blockedUsers = blockedUsers.filter(b => b.email !== email && b.mobile !== mobile);
+            localStorage.setItem('admin_blocked_users', JSON.stringify(blockedUsers));
+            showToast('வாடிக்கையாளர் Unblock செய்யப்பட்டார்!');
+            renderFraudAlerts();
+        }
+
+        function clearFraudLogs() {
+            if (!confirm('மோசடிப் பட்டியலை அழிக்கவா?')) return;
+            localStorage.removeItem('admin_fraud_alerts');
+            showToast('பட்டியல் அழிக்கப்பட்டது.');
+            renderFraudAlerts();
+        }
+
+        function renderBooksInventory() {
+            const container = document.getElementById('adminBooksList');
+            const books = JSON.parse(localStorage.getItem('ebook_inventory') || '[]');
+
+            if (books.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 py-4 col-span-1 sm:col-span-3">புத்தகங்கள் ஏதுமில்லை.</p>`;
+                return;
+            }
+
+            container.innerHTML = books.map((b, idx) => `
+                <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between gap-3">
+                    <img src="${b.cover}" class="w-12 h-16 object-cover rounded-lg bg-slate-200 shrink-0">
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-bold text-xs sm:text-sm text-slate-900 truncate">${b.title}</h4>
+                        <p class="text-[11px] text-slate-500 truncate">${b.author}</p>
+                        <p class="text-xs font-bold text-emerald-600 mt-0.5">₹${b.price}</p>
+                        <span class="inline-block mt-0.5 px-2 py-0.5 bg-cyan-100 text-cyan-800 rounded text-[9px] font-extrabold">டவுன்லோட்: ${b.totalDownloads || 0} முறை</span>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <button onclick="openEditModal(${idx})" class="p-1.5 text-indigo-600 hover:bg-indigo-100 rounded-lg transition"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                        <button onclick="deleteBook(${idx})" class="p-1.5 text-rose-500 hover:bg-rose-100 rounded-lg transition"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function openEditModal(index) {
+            const books = JSON.parse(localStorage.getItem('ebook_inventory') || '[]');
+            const b = books[index];
+            document.getElementById('editBookIndex').value = index;
+            document.getElementById('editTitle').value = b.title;
+            document.getElementById('editAuthor').value = b.author;
+            document.getElementById('editOrigPrice').value = b.origPrice;
+            document.getElementById('editPrice').value = b.price;
+            document.getElementById('editCover').value = b.cover;
+            document.getElementById('editPreview').value = b.preview;
+            openModal('editBookModal');
+        }
+
+        function handleUpdateBook(e) {
+            e.preventDefault();
+            const index = document.getElementById('editBookIndex').value;
+            const books = JSON.parse(localStorage.getItem('ebook_inventory') || '[]');
+
+            books[index].title = document.getElementById('editTitle').value.trim();
+            books[index].author = document.getElementById('editAuthor').value.trim();
+            books[index].origPrice = Number(document.getElementById('editOrigPrice').value);
+            books[index].price = Number(document.getElementById('editPrice').value);
+            books[index].cover = document.getElementById('editCover').value.trim();
+            books[index].preview = document.getElementById('editPreview').value.trim();
+
+            localStorage.setItem('ebook_inventory', JSON.stringify(books));
+            closeModal('editBookModal');
+            showToast('புத்தக விவரங்கள் புதுப்பிக்கப்பட்டன!');
+            renderBooksInventory();
+        }
+
+        function deleteBook(idx) {
+            if (!confirm('இந்தப் புத்தகத்தை நீக்கவா?')) return;
+            const books = JSON.parse(localStorage.getItem('ebook_inventory') || '[]');
+            books.splice(idx, 1);
+            localStorage.setItem('ebook_inventory', JSON.stringify(books));
+            showToast('புத்தகம் நீக்கப்பட்டது.');
+            renderBooksInventory();
+        }
+
+        async function handleAddNewBook(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "பதிவேற்றப்படுகிறது...";
+
+            try {
+                const title = document.getElementById('newBookTitle').value.trim();
+                const author = document.getElementById('newBookAuthor').value.trim();
+                const origPrice = Number(document.getElementById('newBookOrigPrice').value);
+                const price = Number(document.getElementById('newBookPrice').value);
+                
+                const pdfInput = document.getElementById('newBookPdfFile');
+                if (!pdfInput.files || pdfInput.files.length === 0) {
+                    showToast('PDF கோப்பைத் தேர்ந்தெடுக்கவும்!', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "இணையதளத்தில் சேர்க்கவும்";
+                    return;
+                }
+                const pdfFile = pdfInput.files[0];
+                const pdfBase64 = await fileToBase64(pdfFile);
+
+                let coverUrl = "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80";
+                const coverFileInput = document.getElementById('newBookCoverFile');
+                const coverUrlInput = document.getElementById('newBookCoverUrl').value.trim();
+
+                if (coverFileInput.files && coverFileInput.files.length > 0) {
+                    coverUrl = await fileToBase64(coverFileInput.files[0]);
+                } else if (coverUrlInput) {
+                    coverUrl = coverUrlInput;
+                }
+
+                let previewText = document.getElementById('newBookPreview').value.trim();
+                if (!previewText) {
+                    previewText = `${title} என்பது ${author} அவர்களின் சிறந்த மின்புத்தகமாகும்.`;
+                }
+
+                const newBook = {
+                    id: Date.now(),
+                    title, author, origPrice, price,
+                    cover: coverUrl,
+                    preview: previewText,
+                    pdfData: pdfBase64,
+                    fileName: pdfFile.name,
+                    totalDownloads: 0
+                };
+
+                const books = JSON.parse(localStorage.getItem('ebook_inventory') || '[]');
+                books.push(newBook);
+                
+                try {
+                    localStorage.setItem('ebook_inventory', JSON.stringify(books));
+                } catch (err) {
+                    showToast('சேமிப்பக வரம்பு நிறைவடைந்தது. சிறிய PDF-ஐப் பயன்படுத்தவும்.', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "இணையதளத்தில் சேர்க்கவும்";
+                    return;
+                }
+
+                showToast('புத்தகம் வெற்றிகரமாகச் சேர்க்கப்பட்டது!');
+                document.getElementById('addBookForm').reset();
+                renderBooksInventory();
+                switchTab('inventory-tab');
+            } catch (err) {
+                showToast('பிழை: கோப்பை ஏற்றுவதில் சிக்கல்.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> <span>இணையதளத்தில் சேர்க்கவும்</span>`;
+                lucide.createIcons();
+            }
+        }
+
+        function renderSlidesEditor() {
+            const container = document.getElementById('slidesEditContainer');
+            const slides = JSON.parse(localStorage.getItem('admin_slides_data') || '[]');
+
+            container.innerHTML = slides.map((s, idx) => `
+                <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-2.5">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">ஸ்லைடு ${idx + 1}</span>
+                        <button onclick="generateAiSlideImage(${idx})" class="text-[10px] font-bold text-amber-700 bg-amber-100 hover:bg-amber-200 px-2 py-1 rounded-lg transition flex items-center gap-1">
+                            <i data-lucide="sparkles" class="w-3 h-3 text-amber-600"></i> AI படம் உருவாக்கு
+                        </button>
+                    </div>
+
+                    <div class="aspect-video rounded-xl overflow-hidden bg-slate-200 relative">
+                        <img id="slideImgPreview_${idx}" src="${s.bgImage}" class="w-full h-full object-cover">
+                    </div>
+
+                    <div class="space-y-1.5 text-xs">
+                        <div>
+                            <label class="block font-bold text-slate-600 mb-0.5">தலைப்பு</label>
+                            <input type="text" id="slideTitle_${idx}" value="${s.title}" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 mb-0.5">விளக்கம்</label>
+                            <textarea id="slideDesc_${idx}" rows="2" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg">${s.desc}</textarea>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 mb-0.5">பட URL</label>
+                            <input type="url" id="slideImage_${idx}" value="${s.bgImage}" onchange="document.getElementById('slideImgPreview_${idx}').src = this.value" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg font-mono text-[10px]">
+                        </div>
+                    </div>
+
+                    <button onclick="saveSingleSlide(${idx})" class="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-1">
+                        <i data-lucide="save" class="w-3.5 h-3.5"></i> மாற்றங்களைச் சேமி
+                    </button>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function generateAiSlideImage(idx) {
+            const title = document.getElementById(`slideTitle_${idx}`).value.trim() || "technology library e-book wallpaper";
+            showToast("AI படம் உருவாக்கப்படுகிறது...", "success");
+
+            const prompt = encodeURIComponent(title + " cinematic photorealistic 4k library wallpaper");
+            const seed = Math.floor(Math.random() * 999999);
+            const aiImageUrl = `https://image.pollinations.ai/prompt/${prompt}?width=1600&height=800&nologo=true&seed=${seed}`;
+
+            document.getElementById(`slideImage_${idx}`).value = aiImageUrl;
+            document.getElementById(`slideImgPreview_${idx}`).src = aiImageUrl;
+            showToast("AI படம் உருவாக்கப்பட்டது!");
+        }
+
+        function saveSingleSlide(idx) {
+            const slides = JSON.parse(localStorage.getItem('admin_slides_data') || '[]');
+            slides[idx].title = document.getElementById(`slideTitle_${idx}`).value.trim();
+            slides[idx].desc = document.getElementById(`slideDesc_${idx}`).value.trim();
+            slides[idx].bgImage = document.getElementById(`slideImage_${idx}`).value.trim();
+
+            localStorage.setItem('admin_slides_data', JSON.stringify(slides));
+            showToast(`ஸ்லைடு ${idx + 1} புதுப்பிக்கப்பட்டது!`);
+        }
+
+        function resetDefaultSlides() {
+            if (!confirm('ஸ்லைடுகளை இயல்புநிலைக்கு மாற்றவா?')) return;
+            localStorage.removeItem('admin_slides_data');
+            showToast('ஸ்லைடுகள் இயல்புநிலைக்கு மாற்றப்பட்டன.');
+            renderSlidesEditor();
+        }
+
+        function loadUpiSettings() {
+            const config = JSON.parse(localStorage.getItem('admin_upi_settings') || '{}');
+            document.getElementById('adminUpiId').value = config.upiId || "9876543210@upi";
+            document.getElementById('adminStoreName').value = config.storeName || "Nool Koodam";
+        }
+
+        function handleSaveUpiSettings(e) {
+            e.preventDefault();
+            const upiId = document.getElementById('adminUpiId').value.trim();
+            const storeName = document.getElementById('adminStoreName').value.trim();
+
+            localStorage.setItem('admin_upi_settings', JSON.stringify({ upiId, storeName }));
+            showToast('UPI அமைப்புகள் சேமிக்கப்பட்டன!');
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        function renderAll() {
+            renderOrders();
+            renderCoupons();
+            renderSlidesEditor();
+            renderSupportTickets();
+            renderFraudAlerts();
+            renderBooksInventory();
+            loadUpiSettings();
+            applyAdminLanguage();
+        }
+
+        window.onload = checkSession;
+    </script>
+</body>
+</html>
