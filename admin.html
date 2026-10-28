@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>அட்மின் போர்ட்டல் | நூல் கூடம்</title>
+    <title>Admin Portal | Nool Koodam</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -20,14 +20,19 @@
         #toast.show { transform: translateY(0) scale(1); }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Mobile Drawer Transition */
+        #mobileDrawer {
+            transition: transform 0.3s ease-in-out;
+        }
     </style>
 </head>
-<body class="bg-slate-100 flex min-h-screen text-slate-800 pb-16 lg:pb-0">
+<body class="bg-slate-100 flex min-h-screen text-slate-800 pb-20 lg:pb-0">
 
     <!-- Pop Notification -->
     <div id="toast" class="fixed top-4 inset-x-4 sm:inset-x-auto sm:right-6 sm:top-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border text-xs sm:text-sm font-bold bg-white text-slate-800 border-slate-200 opacity-0 pointer-events-none">
         <div id="toastIcon" class="p-1.5 rounded-full shrink-0"></div>
-        <span id="toastMsg" class="truncate">அறிவிப்பு</span>
+        <span id="toastMsg" class="truncate">Alert</span>
     </div>
 
     <!-- 1. LOGIN OVERLAY -->
@@ -37,32 +42,115 @@
                 <i data-lucide="lock" class="w-6 h-6"></i>
             </div>
             <div>
-                <h2 class="text-xl sm:text-2xl font-black text-slate-900" data-admin-i18n="loginTitle">அட்மின் உள்நுழைவு</h2>
-                <p class="text-[11px] sm:text-xs text-slate-500 mt-1" data-admin-i18n="loginSub">நிர்வாகப் பக்கத்தை அணுக சான்றுகளை உள்ளிடவும்</p>
+                <h2 class="text-xl sm:text-2xl font-black text-slate-900" data-admin-i18n="loginTitle">Admin Login</h2>
+                <p class="text-[11px] sm:text-xs text-slate-500 mt-1" data-admin-i18n="loginSub">Enter credentials to open admin dashboard</p>
             </div>
             
             <form onsubmit="handleAdminLogin(event)" class="space-y-3.5 text-left">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1" data-admin-i18n="lblUser">பயனர்பெயர் (Username)</label>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1" data-admin-i18n="lblUser">Username</label>
                     <input type="text" id="adminUser" required placeholder="admin" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-indigo-500 text-xs sm:text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1" data-admin-i18n="lblPass">கடவுச்சொல் (Password)</label>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1" data-admin-i18n="lblPass">Password</label>
                     <input type="password" id="adminPass" required placeholder="••••••••" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-indigo-500 text-xs sm:text-sm">
                 </div>
                 <button type="submit" class="w-full py-2.5 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition text-xs sm:text-sm active:scale-95" data-admin-i18n="btnLogin">
-                    உள்நுழைக
+                    Login
                 </button>
             </form>
-            <div class="text-[10px] text-slate-400">
-                Default: <span class="font-mono font-bold text-slate-600">admin / admin123</span>
-            </div>
+            <div class="text-[10px] text-slate-400">Default: <span class="font-mono font-bold text-slate-600">admin / admin123</span></div>
         </div>
     </div>
 
     <!-- 2. ADMIN DASHBOARD WORKSPACE -->
     <div id="adminApp" class="flex w-full min-h-screen">
-        <!-- Sidebar Navigation (Desktop View) -->
+
+        <!-- Mobile Drawer Backdrop Overlay -->
+        <div id="drawerBackdrop" onclick="toggleMobileDrawer()" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity"></div>
+
+        <!-- Mobile Drawer Sidebar Menu (Slide-in Menu) -->
+        <div id="mobileDrawer" class="fixed inset-y-0 left-0 w-72 bg-slate-900 text-white z-50 p-6 flex flex-col justify-between -translate-x-full lg:hidden shadow-2xl">
+            <div class="space-y-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-md">
+                            <i data-lucide="shield-check" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h2 class="font-black text-base tracking-tight">Nool Koodam</h2>
+                            <span class="text-[9px] text-indigo-400 font-bold uppercase tracking-wider">Admin Panel</span>
+                        </div>
+                    </div>
+                    <button onclick="toggleMobileDrawer()" class="p-1.5 text-slate-400 hover:text-white rounded-lg">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- Navigation List -->
+                <nav class="space-y-1 text-xs font-semibold overflow-y-auto max-h-[70vh]">
+                    <button onclick="switchTab('orders-tab'); toggleMobileDrawer();" class="drawer-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
+                        <i data-lucide="receipt" class="w-4 h-4"></i>
+                        <span data-admin-i18n="menuOrders">UPI Orders</span>
+                    </button>
+                    <button onclick="switchTab('coupons-tab'); toggleMobileDrawer();" class="drawer-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
+                        <i data-lucide="tag" class="w-4 h-4 text-emerald-400"></i>
+                        <span data-admin-i18n="menuCoupons">Coupons</span>
+                    </button>
+                    <button onclick="switchTab('slides-tab'); toggleMobileDrawer();" class="drawer-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i>
+                        <span data-admin-i18n="menuSlides">Slides & AI Generator</span>
+                    </button>
+                    <button onclick="switchTab('tickets-tab'); toggleMobileDrawer();" class="drawer-btn w-full flex items-center justify-between py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="headset" class="w-4 h-4 text-cyan-400"></i>
+                            <span data-admin-i18n="menuTickets">Support Requests</span>
+                        </div>
+                        <span id="badgeTicketDrawer" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-600 text-white">0</span>
+                    </button>
+                    <button onclick="switchTab('fraud-tab'); toggleMobileDrawer();" class="drawer-btn w-full flex items-center justify-between py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="shield-alert" class="w-4 h-4 text-rose-400"></i>
+                            <span data-admin-i18n="menuFraud">Fraud Alert Log</span>
+                        </div>
+                        <span id="badgeFraudDrawer" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-600 text-white">0</span>
+                    </button>
+                    <button onclick="switchTab('inventory-tab'); toggleMobileDrawer();" class="drawer-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
+                        <i data-lucide="book-copy" class="w-4 h-4"></i>
+                        <span data-admin-i18n="menuInventory">Books & Inventory</span>
+                    </button>
+                    <button onclick="switchTab('add-book-tab'); toggleMobileDrawer();" class="drawer-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        <span data-admin-i18n="menuAddBook">Add New Book</span>
+                    </button>
+                    <button onclick="switchTab('backup-tab'); toggleMobileDrawer();" class="drawer-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
+                        <i data-lucide="database" class="w-4 h-4 text-indigo-400"></i>
+                        <span data-admin-i18n="menuBackup">Excel & Backup</span>
+                    </button>
+                    <button onclick="switchTab('upi-settings-tab'); toggleMobileDrawer();" class="drawer-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
+                        <i data-lucide="qr-code" class="w-4 h-4"></i>
+                        <span data-admin-i18n="menuUpi">UPI Settings</span>
+                    </button>
+                    <button onclick="switchTab('security-settings-tab'); toggleMobileDrawer();" class="drawer-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
+                        <i data-lucide="key" class="w-4 h-4"></i>
+                        <span data-admin-i18n="menuSecurity">Security & Pass</span>
+                    </button>
+                </nav>
+            </div>
+
+            <div class="space-y-2 pt-4 border-t border-slate-800">
+                <button onclick="adminLogout()" class="w-full flex items-center gap-2 py-2 px-3 text-rose-400 hover:bg-slate-800 rounded-lg text-xs font-bold transition">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    <span data-admin-i18n="btnLogout">Logout</span>
+                </button>
+                <a href="index.html" class="flex items-center gap-2 py-2 px-3 text-slate-400 hover:text-white rounded-lg text-xs font-bold transition">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    <span data-admin-i18n="btnToHome">Go to Storefront</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Desktop Sidebar Navigation -->
         <aside class="w-64 bg-slate-900 text-white p-6 hidden lg:flex flex-col justify-between shrink-0 shadow-2xl">
             <div class="space-y-6">
                 <div class="flex items-center gap-3">
@@ -70,67 +158,57 @@
                         <i data-lucide="shield-check" class="w-6 h-6"></i>
                     </div>
                     <div>
-                        <h2 class="font-black text-lg tracking-tight">நூல் கூடம்</h2>
+                        <h2 class="font-black text-lg tracking-tight">Nool Koodam</h2>
                         <span class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Admin Portal</span>
                     </div>
                 </div>
 
-                <!-- Navigation Tabs -->
                 <nav class="space-y-1 text-xs font-semibold">
                     <button onclick="switchTab('orders-tab', this)" class="tab-btn w-full flex items-center gap-3 py-2.5 px-4 bg-indigo-600 text-white rounded-xl font-bold shadow transition">
                         <i data-lucide="receipt" class="w-4 h-4"></i>
-                        <span data-admin-i18n="menuOrders">UPI ஆர்டர்கள்</span>
+                        <span data-admin-i18n="menuOrders">UPI Orders</span>
                     </button>
-
                     <button onclick="switchTab('coupons-tab', this)" class="tab-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
                         <i data-lucide="tag" class="w-4 h-4 text-emerald-400"></i>
-                        <span data-admin-i18n="menuCoupons">கூப்பன்கள்</span>
+                        <span data-admin-i18n="menuCoupons">Coupons</span>
                     </button>
-
                     <button onclick="switchTab('slides-tab', this)" class="tab-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
                         <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i>
-                        <span data-admin-i18n="menuSlides">ஸ்லைடுகள் & AI படம்</span>
+                        <span data-admin-i18n="menuSlides">Slides & AI Generator</span>
                     </button>
-                    
                     <button onclick="switchTab('tickets-tab', this)" class="tab-btn w-full flex items-center justify-between py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
                         <div class="flex items-center gap-3">
                             <i data-lucide="headset" class="w-4 h-4 text-cyan-400"></i>
-                            <span data-admin-i18n="menuTickets">உதவி கோரிக்கைகள்</span>
+                            <span data-admin-i18n="menuTickets">Support Requests</span>
                         </div>
                         <span id="badgeTicketCount" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-600 text-white">0</span>
                     </button>
-
                     <button onclick="switchTab('fraud-tab', this)" class="tab-btn w-full flex items-center justify-between py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
                         <div class="flex items-center gap-3">
                             <i data-lucide="shield-alert" class="w-4 h-4 text-rose-400"></i>
-                            <span data-admin-i18n="menuFraud">மோசடி எச்சரிக்கை</span>
+                            <span data-admin-i18n="menuFraud">Fraud Alert Log</span>
                         </div>
                         <span id="badgeFraudCount" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-600 text-white">0</span>
                     </button>
-
                     <button onclick="switchTab('inventory-tab', this)" class="tab-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
                         <i data-lucide="book-copy" class="w-4 h-4"></i>
-                        <span data-admin-i18n="menuInventory">புத்தகங்கள் & டவுன்லோட்ஸ்</span>
+                        <span data-admin-i18n="menuInventory">Books & Inventory</span>
                     </button>
-                    
                     <button onclick="switchTab('add-book-tab', this)" class="tab-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
                         <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                        <span data-admin-i18n="menuAddBook">புதிய புத்தகம் சேர்க்க</span>
+                        <span data-admin-i18n="menuAddBook">Add New Book</span>
                     </button>
-
                     <button onclick="switchTab('backup-tab', this)" class="tab-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
                         <i data-lucide="database" class="w-4 h-4 text-indigo-400"></i>
                         <span data-admin-i18n="menuBackup">Excel & Backup</span>
                     </button>
-
                     <button onclick="switchTab('upi-settings-tab', this)" class="tab-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
                         <i data-lucide="qr-code" class="w-4 h-4"></i>
-                        <span data-admin-i18n="menuUpi">UPI அமைப்புகள்</span>
+                        <span data-admin-i18n="menuUpi">UPI Settings</span>
                     </button>
-
                     <button onclick="switchTab('security-settings-tab', this)" class="tab-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
                         <i data-lucide="key" class="w-4 h-4"></i>
-                        <span data-admin-i18n="menuSecurity">பாதுகாப்பு & கடவுச்சொல்</span>
+                        <span data-admin-i18n="menuSecurity">Security & Pass</span>
                     </button>
                 </nav>
             </div>
@@ -138,11 +216,11 @@
             <div class="space-y-2">
                 <button onclick="adminLogout()" class="w-full flex items-center gap-2 py-2 px-3 text-rose-400 hover:bg-slate-800 rounded-lg text-xs font-bold transition">
                     <i data-lucide="log-out" class="w-4 h-4"></i>
-                    <span data-admin-i18n="btnLogout">வெளியேறு (Logout)</span>
+                    <span data-admin-i18n="btnLogout">Logout</span>
                 </button>
                 <a href="index.html" class="flex items-center gap-2 py-2 px-3 text-slate-400 hover:text-white rounded-lg text-xs font-bold transition">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                    <span data-admin-i18n="btnToHome">முகப்புக்குச் செல்க</span>
+                    <span data-admin-i18n="btnToHome">Go to Storefront</span>
                 </a>
             </div>
         </aside>
@@ -150,44 +228,47 @@
         <!-- Main Workspace Area -->
         <main class="flex-1 p-3.5 sm:p-6 lg:p-10 space-y-5 overflow-y-auto w-full max-w-full">
             
-            <!-- Mobile Top Scrollable Menu -->
-            <div class="lg:hidden flex overflow-x-auto gap-2 pb-1 hide-scrollbar">
-                <button onclick="switchTab('orders-tab', this)" class="tab-btn px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-bold shrink-0">ஆர்டர்கள்</button>
-                <button onclick="switchTab('coupons-tab', this)" class="tab-btn px-3 py-1.5 bg-white text-emerald-600 border border-slate-200 rounded-xl text-xs font-bold shrink-0">கூப்பன்கள்</button>
-                <button onclick="switchTab('slides-tab', this)" class="tab-btn px-3 py-1.5 bg-white text-amber-600 border border-slate-200 rounded-xl text-xs font-bold shrink-0">ஸ்லைடுகள் & AI</button>
-                <button onclick="switchTab('tickets-tab', this)" class="tab-btn px-3 py-1.5 bg-white text-cyan-600 border border-slate-200 rounded-xl text-xs font-bold shrink-0">உதவி</button>
-                <button onclick="switchTab('fraud-tab', this)" class="tab-btn px-3 py-1.5 bg-white text-rose-600 border border-slate-200 rounded-xl text-xs font-bold shrink-0">மோசடி</button>
-                <button onclick="switchTab('inventory-tab', this)" class="tab-btn px-3 py-1.5 bg-white text-slate-700 border border-slate-200 rounded-xl text-xs font-bold shrink-0">புத்தகங்கள்</button>
-                <button onclick="switchTab('add-book-tab', this)" class="tab-btn px-3 py-1.5 bg-white text-slate-700 border border-slate-200 rounded-xl text-xs font-bold shrink-0">+ புத்தகம்</button>
-                <button onclick="switchTab('backup-tab', this)" class="tab-btn px-3 py-1.5 bg-white text-indigo-600 border border-slate-200 rounded-xl text-xs font-bold shrink-0">Excel/Backup</button>
-                <button onclick="switchTab('upi-settings-tab', this)" class="tab-btn px-3 py-1.5 bg-white text-slate-700 border border-slate-200 rounded-xl text-xs font-bold shrink-0">UPI</button>
-                <button onclick="switchTab('security-settings-tab', this)" class="tab-btn px-3 py-1.5 bg-white text-slate-700 border border-slate-200 rounded-xl text-xs font-bold shrink-0">கடவுச்சொல்</button>
-                <button onclick="adminLogout()" class="px-3 py-1.5 bg-rose-100 text-rose-700 rounded-xl text-xs font-bold shrink-0">Logout</button>
+            <!-- Mobile Top Header Bar with Hamburger Button -->
+            <div class="flex items-center justify-between bg-white p-3 rounded-2xl border border-slate-200 shadow-sm lg:hidden">
+                <div class="flex items-center gap-2.5">
+                    <button onclick="toggleMobileDrawer()" class="p-2 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-100 transition active:scale-95">
+                        <i data-lucide="menu" class="w-5 h-5"></i>
+                    </button>
+                    <div>
+                        <h2 class="font-extrabold text-sm text-slate-900 leading-tight">Admin Portal</h2>
+                        <span id="mobileDateText" class="text-[10px] text-slate-500 font-medium"></span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span id="mobileClockText" class="text-xs font-black font-mono text-indigo-600 bg-indigo-50 px-2 py-1 rounded-lg"></span>
+                    <button onclick="toggleAdminLanguage()" class="px-2.5 py-1 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 bg-white">
+                        <span id="adminMobileLangBtn">EN</span>
+                    </button>
+                </div>
             </div>
 
-            <!-- Top Responsive Header (With Real-Time Clock & Language Switcher) -->
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+            <!-- Desktop Header -->
+            <div class="hidden lg:flex justify-between items-center gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
                 <div>
-                    <h1 class="text-lg sm:text-2xl font-black text-slate-900 tracking-tight" id="currentTabTitle">UPI ஆர்டர்கள்</h1>
-                    <p class="text-slate-500 text-[11px] sm:text-xs mt-0.5" data-admin-i18n="adminDesc">முழுமையான நிர்வாக மேலாண்மை மற்றும் கட்டுப்பாட்டுப் பலகை.</p>
+                    <h1 class="text-xl lg:text-2xl font-black text-slate-900 tracking-tight" id="currentTabTitle">UPI Orders</h1>
+                    <p class="text-slate-500 text-xs mt-0.5" data-admin-i18n="adminDesc">Complete operational management and store oversight.</p>
                 </div>
                 
-                <div class="flex items-center justify-between w-full sm:w-auto gap-2 sm:gap-4">
-                    <!-- Real-Time Date & Clock Component -->
-                    <div class="flex flex-col text-left sm:text-right bg-slate-50 sm:bg-transparent p-2 sm:p-0 rounded-xl border sm:border-0 border-slate-200">
-                        <span id="adminLiveDate" class="text-[10px] sm:text-xs font-bold text-slate-500"></span>
-                        <span id="adminLiveClock" class="text-xs sm:text-sm font-black text-indigo-600 font-mono tracking-wide"></span>
+                <div class="flex items-center gap-4">
+                    <div class="flex flex-col text-right">
+                        <span id="adminLiveDate" class="text-xs font-bold text-slate-500"></span>
+                        <span id="adminLiveClock" class="text-sm font-black text-indigo-600 font-mono tracking-wide"></span>
                     </div>
 
-                    <div class="flex items-center gap-2 shrink-0">
-                        <!-- Dual Language Toggle Button -->
-                        <button onclick="toggleAdminLanguage()" class="px-2.5 py-1.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition flex items-center gap-1.5 bg-white shadow-sm">
+                    <div class="flex items-center gap-2">
+                        <button onclick="toggleAdminLanguage()" class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold hover:bg-slate-50 transition flex items-center gap-1.5 bg-white shadow-sm">
                             <i data-lucide="languages" class="w-3.5 h-3.5 text-indigo-600"></i>
                             <span id="adminLangBtnText">EN</span>
                         </button>
 
-                        <button onclick="renderAll()" class="p-2 sm:px-3 sm:py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5 shrink-0" title="புதுப்பி">
-                            <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i> <span class="hidden sm:inline" data-admin-i18n="btnRefresh">புதுப்பி</span>
+                        <button onclick="renderAll()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition flex items-center gap-1.5" title="Refresh">
+                            <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i> <span data-admin-i18n="btnRefresh">Refresh</span>
                         </button>
                     </div>
                 </div>
@@ -198,28 +279,28 @@
                 <div class="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
                     <div class="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl shrink-0"><i data-lucide="indian-rupee" class="w-5 h-5"></i></div>
                     <div class="min-w-0">
-                        <span class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase truncate block" data-admin-i18n="statRev">வருவாய்</span>
+                        <span class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase truncate block" data-admin-i18n="statRev">Revenue</span>
                         <h3 id="statRevenue" class="text-base sm:text-xl font-black text-slate-900 truncate">₹0</h3>
                     </div>
                 </div>
                 <div class="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
                     <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl shrink-0"><i data-lucide="shopping-bag" class="w-5 h-5"></i></div>
                     <div class="min-w-0">
-                        <span class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase truncate block" data-admin-i18n="statOrd">ஆர்டர்கள்</span>
+                        <span class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase truncate block" data-admin-i18n="statOrd">Orders</span>
                         <h3 id="statOrders" class="text-base sm:text-xl font-black text-slate-900 truncate">0</h3>
                     </div>
                 </div>
                 <div class="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
                     <div class="p-2.5 bg-rose-50 text-rose-600 rounded-xl shrink-0"><i data-lucide="shield-alert" class="w-5 h-5"></i></div>
                     <div class="min-w-0">
-                        <span class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase truncate block" data-admin-i18n="statFraud">மோசடிகள்</span>
+                        <span class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase truncate block" data-admin-i18n="statFraud">Fraud Logs</span>
                         <h3 id="statFraudCount" class="text-base sm:text-xl font-black text-rose-600 truncate">0</h3>
                     </div>
                 </div>
                 <div class="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
                     <div class="p-2.5 bg-cyan-50 text-cyan-600 rounded-xl shrink-0"><i data-lucide="headset" class="w-5 h-5"></i></div>
                     <div class="min-w-0">
-                        <span class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase truncate block" data-admin-i18n="statTickets">உதவி கோரிக்கை</span>
+                        <span class="text-[10px] sm:text-xs text-slate-400 font-bold uppercase truncate block" data-admin-i18n="statTickets">Tickets</span>
                         <h3 id="statTicketCount" class="text-base sm:text-xl font-black text-cyan-600 truncate">0</h3>
                     </div>
                 </div>
@@ -230,24 +311,24 @@
                 <div class="flex justify-between items-center">
                     <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
                         <i data-lucide="list-checks" class="w-4 h-4 text-indigo-600"></i>
-                        <span data-admin-i18n="tblOrdersHead">வாடிக்கையாளர் ஆர்டர்கள்</span>
+                        <span data-admin-i18n="tblOrdersHead">Customer Orders</span>
                     </h2>
-                    <button onclick="clearCompletedOrders()" class="text-[11px] text-rose-600 font-bold hover:underline" data-admin-i18n="btnClearDone">முடிந்தவற்றை நீக்கு</button>
+                    <button onclick="clearCompletedOrders()" class="text-[11px] text-rose-600 font-bold hover:underline" data-admin-i18n="btnClearDone">Clear Finished</button>
                 </div>
 
                 <div class="overflow-x-auto -mx-4 sm:mx-0">
                     <table class="w-full text-left text-xs min-w-[750px]">
                         <thead>
                             <tr class="border-b border-slate-100 text-slate-400 text-[10px] sm:text-[11px] uppercase">
-                                <th class="py-2.5 px-3">ஆர்டர் ID</th>
-                                <th class="py-2.5 px-3">வாடிக்கையாளர்</th>
-                                <th class="py-2.5 px-3">மொபைல்</th>
-                                <th class="py-2.5 px-3">புத்தகம்</th>
-                                <th class="py-2.5 px-3">தொகை</th>
-                                <th class="py-2.5 px-3">UTR எண்</th>
-                                <th class="py-2.5 px-3">டவுன்லோட்ஸ்</th>
-                                <th class="py-2.5 px-3">நிலை</th>
-                                <th class="py-2.5 px-3 text-right">செயல்பாடுகள்</th>
+                                <th class="py-2.5 px-3">Order ID</th>
+                                <th class="py-2.5 px-3">Customer</th>
+                                <th class="py-2.5 px-3">Mobile</th>
+                                <th class="py-2.5 px-3">Book</th>
+                                <th class="py-2.5 px-3">Amount</th>
+                                <th class="py-2.5 px-3">UTR</th>
+                                <th class="py-2.5 px-3">Downloads</th>
+                                <th class="py-2.5 px-3">Status</th>
+                                <th class="py-2.5 px-3 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="ordersTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
@@ -260,22 +341,22 @@
                 <div>
                     <h2 class="text-sm sm:text-base font-bold text-emerald-700 flex items-center gap-2">
                         <i data-lucide="tag" class="w-4 h-4 text-emerald-600"></i> 
-                        <span data-admin-i18n="tblCouponsHead">தள்ளுபடி கூப்பன்கள் மேலாண்மை</span>
+                        <span data-admin-i18n="tblCouponsHead">Discount Coupons Manager</span>
                     </h2>
-                    <p class="text-[11px] text-slate-500 mt-0.5">புதிய கூப்பன் குறியீடுகளை உருவாக்கி தள்ளுபடி வழங்கலாம்.</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Create discount codes to offer promotions.</p>
                 </div>
 
                 <form onsubmit="handleCreateCoupon(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs">
                     <div>
-                        <label class="block font-bold text-slate-700 mb-1">கூப்பன் குறியீடு (Code)</label>
+                        <label class="block font-bold text-slate-700 mb-1">Coupon Code</label>
                         <input type="text" id="newCouponCode" required placeholder="SAVE50" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl font-mono uppercase">
                     </div>
                     <div>
-                        <label class="block font-bold text-slate-700 mb-1">தள்ளுபடி சதவீதம் (%)</label>
+                        <label class="block font-bold text-slate-700 mb-1">Discount Percentage (%)</label>
                         <input type="number" id="newCouponPercent" required placeholder="50" min="1" max="100" class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl">
                     </div>
                     <div class="flex items-end">
-                        <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow active:scale-95">கூப்பன் சேர்</button>
+                        <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow active:scale-95">Add Coupon</button>
                     </div>
                 </form>
 
@@ -283,9 +364,9 @@
                     <table class="w-full text-left text-xs">
                         <thead>
                             <tr class="border-b border-slate-100 text-slate-400 text-[10px] uppercase">
-                                <th class="py-2 px-3">குறியீடு</th>
-                                <th class="py-2 px-3">தள்ளுபடி</th>
-                                <th class="py-2 px-3 text-right">செயல்பாடு</th>
+                                <th class="py-2 px-3">Code</th>
+                                <th class="py-2 px-3">Discount</th>
+                                <th class="py-2 px-3 text-right">Action</th>
                             </tr>
                         </thead>
                         <tbody id="couponsTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
@@ -299,10 +380,10 @@
                     <div>
                         <h2 class="text-sm sm:text-base font-bold text-amber-600 flex items-center gap-2">
                             <i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i>
-                            <span>ஸ்லைடுகள் & AI படம் உருவாக்குதல்</span>
+                            <span>Slides & AI Image Generator</span>
                         </h2>
                     </div>
-                    <button onclick="resetDefaultSlides()" class="text-[11px] text-indigo-600 font-bold hover:underline">இயல்புநிலைக்கு மாற்று</button>
+                    <button onclick="resetDefaultSlides()" class="text-[11px] text-indigo-600 font-bold hover:underline">Reset to Defaults</button>
                 </div>
                 <div id="slidesEditContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5"></div>
             </section>
@@ -313,10 +394,10 @@
                     <div>
                         <h2 class="text-sm sm:text-base font-bold text-cyan-700 flex items-center gap-2">
                             <i data-lucide="headset" class="w-4 h-4 text-cyan-600"></i>
-                            <span>வாடிக்கையாளர் உதவி கோரிக்கைகள் (Support Tickets)</span>
+                            <span>Support Tickets Desk</span>
                         </h2>
                     </div>
-                    <button onclick="clearSupportTickets()" class="text-[11px] text-rose-600 font-bold hover:underline">அனைத்தையும் அழி</button>
+                    <button onclick="clearSupportTickets()" class="text-[11px] text-rose-600 font-bold hover:underline">Clear All</button>
                 </div>
 
                 <div class="overflow-x-auto -mx-4 sm:mx-0">
@@ -324,12 +405,12 @@
                         <thead>
                             <tr class="border-b border-slate-100 text-slate-400 text-[10px] uppercase">
                                 <th class="py-2.5 px-3">ID</th>
-                                <th class="py-2.5 px-3">பெயர்</th>
-                                <th class="py-2.5 px-3">மொபைல்</th>
+                                <th class="py-2.5 px-3">Name</th>
+                                <th class="py-2.5 px-3">Mobile</th>
                                 <th class="py-2.5 px-3">UTR</th>
-                                <th class="py-2.5 px-3">விளக்கம்</th>
-                                <th class="py-2.5 px-3">தேதி</th>
-                                <th class="py-2.5 px-3 text-right">தொடர்பு</th>
+                                <th class="py-2.5 px-3">Issue</th>
+                                <th class="py-2.5 px-3">Date</th>
+                                <th class="py-2.5 px-3 text-right">Contact</th>
                             </tr>
                         </thead>
                         <tbody id="ticketsTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
@@ -342,21 +423,21 @@
                 <div class="flex justify-between items-center">
                     <h2 class="text-sm sm:text-base font-bold text-rose-600 flex items-center gap-2">
                         <i data-lucide="shield-alert" class="w-4 h-4 text-rose-600"></i>
-                        <span>மோசடி எச்சரிக்கை பலகை</span>
+                        <span>Fraud Alert Log</span>
                     </h2>
-                    <button onclick="clearFraudLogs()" class="text-[11px] text-rose-600 font-bold hover:underline">அழி</button>
+                    <button onclick="clearFraudLogs()" class="text-[11px] text-rose-600 font-bold hover:underline">Clear Logs</button>
                 </div>
                 <div class="overflow-x-auto -mx-4 sm:mx-0">
                     <table class="w-full text-left text-xs min-w-[700px]">
                         <thead>
                             <tr class="border-b border-slate-100 text-slate-400 text-[10px] uppercase">
                                 <th class="py-2.5 px-3">ID</th>
-                                <th class="py-2.5 px-3">பெயர்</th>
-                                <th class="py-2.5 px-3">மொபைல்</th>
-                                <th class="py-2.5 px-3">மின்னஞ்சல்</th>
-                                <th class="py-2.5 px-3">முயன்ற UTR</th>
-                                <th class="py-2.5 px-3">எச்சரிக்கை</th>
-                                <th class="py-2.5 px-3 text-right">செயல்பாடு</th>
+                                <th class="py-2.5 px-3">Name</th>
+                                <th class="py-2.5 px-3">Mobile</th>
+                                <th class="py-2.5 px-3">Email</th>
+                                <th class="py-2.5 px-3">Attempted UTR</th>
+                                <th class="py-2.5 px-3">Alerts</th>
+                                <th class="py-2.5 px-3 text-right">Action</th>
                             </tr>
                         </thead>
                         <tbody id="fraudTableBody" class="divide-y divide-slate-100 font-medium"></tbody>
@@ -368,7 +449,7 @@
             <section id="inventory-tab" class="tab-content bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-sm space-y-4">
                 <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
                     <i data-lucide="library" class="w-4 h-4 text-indigo-600"></i>
-                    <span>புத்தகங்கள் பட்டியல் & பதிவிறக்கங்கள்</span>
+                    <span>Books & Inventory</span>
                 </h2>
                 <div id="adminBooksList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
             </section>
@@ -377,42 +458,42 @@
             <section id="add-book-tab" class="tab-content bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-sm max-w-2xl space-y-4">
                 <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
                     <i data-lucide="plus-circle" class="w-4 h-4 text-indigo-600"></i> 
-                    <span>புதிய மின்னூல் சேர்த்தல்</span>
+                    <span>Add New E-Book</span>
                 </h2>
                 <form id="addBookForm" onsubmit="handleAddNewBook(event)" class="space-y-3 text-xs sm:text-sm">
                     <div>
-                        <label class="block font-bold text-slate-700 uppercase mb-1">புத்தகத்தின் பெயர் <span class="text-rose-500">*</span></label>
-                        <input type="text" id="newBookTitle" required placeholder="எ.கா: வணிக மேலாண்மை" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-indigo-500">
+                        <label class="block font-bold text-slate-700 uppercase mb-1">Book Title <span class="text-rose-500">*</span></label>
+                        <input type="text" id="newBookTitle" required placeholder="E.g., Business Mastery" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-indigo-500">
                     </div>
                     <div>
-                        <label class="block font-bold text-slate-700 uppercase mb-1">ஆசிரியர் பெயர் <span class="text-rose-500">*</span></label>
-                        <input type="text" id="newBookAuthor" required placeholder="முனைவர் ராமகிருஷ்ணன்" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-indigo-500">
+                        <label class="block font-bold text-slate-700 uppercase mb-1">Author Name <span class="text-rose-500">*</span></label>
+                        <input type="text" id="newBookAuthor" required placeholder="Author Name" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-indigo-500">
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block font-bold text-slate-700 uppercase mb-1">அசல் விலை (₹) <span class="text-rose-500">*</span></label>
+                            <label class="block font-bold text-slate-700 uppercase mb-1">Original Price (₹) <span class="text-rose-500">*</span></label>
                             <input type="number" id="newBookOrigPrice" required placeholder="399" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
                         </div>
                         <div>
-                            <label class="block font-bold text-slate-700 uppercase mb-1">விற்பனை விலை (₹) <span class="text-rose-500">*</span></label>
+                            <label class="block font-bold text-slate-700 uppercase mb-1">Selling Price (₹) <span class="text-rose-500">*</span></label>
                             <input type="number" id="newBookPrice" required placeholder="149" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
                         </div>
                     </div>
                     <div class="p-3 bg-indigo-50/60 border border-indigo-100 rounded-xl space-y-1">
-                        <label class="block font-bold text-indigo-950 uppercase text-xs">PDF கோப்பு பதிவேற்றம் <span class="text-rose-500">*</span></label>
+                        <label class="block font-bold text-indigo-950 uppercase text-xs">PDF File Upload <span class="text-rose-500">*</span></label>
                         <input type="file" id="newBookPdfFile" accept=".pdf" required class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white cursor-pointer">
                     </div>
                     <div class="space-y-1">
-                        <label class="block font-bold text-slate-700 uppercase text-xs">அட்டைப் படம் (Cover Image)</label>
+                        <label class="block font-bold text-slate-700 uppercase text-xs">Cover Image</label>
                         <input type="file" id="newBookCoverFile" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-slate-200 file:text-slate-700 cursor-pointer">
-                        <input type="url" id="newBookCoverUrl" placeholder="அல்லது Image URL..." class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                        <input type="url" id="newBookCoverUrl" placeholder="Or paste image URL..." class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
                     </div>
                     <div>
-                        <label class="block font-bold text-slate-700 uppercase mb-1">மாதிரி வாசிப்பு விவரம்</label>
-                        <textarea id="newBookPreview" rows="2" placeholder="புத்தகத்தின் மாதிரி வரிகள்..." class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-indigo-500"></textarea>
+                        <label class="block font-bold text-slate-700 uppercase mb-1">Sample Extract Preview</label>
+                        <textarea id="newBookPreview" rows="2" placeholder="First few lines of the book..." class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-indigo-500"></textarea>
                     </div>
                     <button type="submit" id="submitBtn" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow flex items-center justify-center gap-1.5 active:scale-95">
-                        <i data-lucide="check" class="w-4 h-4"></i> <span>இணையதளத்தில் சேர்க்கவும்</span>
+                        <i data-lucide="check" class="w-4 h-4"></i> <span>Publish to Store</span>
                     </button>
                 </form>
             </section>
@@ -421,28 +502,28 @@
             <section id="backup-tab" class="tab-content bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-sm space-y-5">
                 <div>
                     <h2 class="text-sm sm:text-base font-bold text-indigo-700 flex items-center gap-2">
-                        <i data-lucide="database" class="w-4 h-4 text-indigo-600"></i> தரவு மேலாண்மை & Backup
+                        <i data-lucide="database" class="w-4 h-4 text-indigo-600"></i> Excel Export & Backup
                     </h2>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
                         <h4 class="font-bold text-xs sm:text-sm text-slate-800 flex items-center gap-1.5">
-                            <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i> Excel (CSV) வடிவில் பதிவிறக்கு
+                            <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i> Download as CSV/Excel
                         </h4>
-                        <p class="text-[11px] text-slate-500">ஆர்டர்கள் மற்றும் வாடிக்கையாளர் எண்களை எக்செல் ஷீட்டாக எடுக்கலாம்.</p>
+                        <p class="text-[11px] text-slate-500">Export customer contact info, orders and transaction history.</p>
                         <button onclick="exportOrdersToCSV()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow flex items-center gap-1.5">
-                            <i data-lucide="download" class="w-3.5 h-3.5"></i> CSV பதிவிறக்கு
+                            <i data-lucide="download" class="w-3.5 h-3.5"></i> Download CSV
                         </button>
                     </div>
 
                     <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
                         <h4 class="font-bold text-xs sm:text-sm text-slate-800 flex items-center gap-1.5">
-                            <i data-lucide="archive" class="w-4 h-4 text-indigo-600"></i> முழு டேட்டா பேக்கப் (JSON)
+                            <i data-lucide="archive" class="w-4 h-4 text-indigo-600"></i> Full Database Backup (JSON)
                         </h4>
-                        <p class="text-[11px] text-slate-500">தளத்தின் ஒட்டுமொத்த டேட்டாவையும் JSON கோப்பாக சேமித்து வைத்துக்கொள்ளலாம்.</p>
+                        <p class="text-[11px] text-slate-500">Save complete database containing books, tickets, orders in JSON format.</p>
                         <button onclick="exportFullBackupJSON()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition shadow flex items-center gap-1.5">
-                            <i data-lucide="download-cloud" class="w-3.5 h-3.5"></i> Backup JSON சேமி
+                            <i data-lucide="download-cloud" class="w-3.5 h-3.5"></i> Save Backup JSON
                         </button>
                     </div>
                 </div>
@@ -451,7 +532,7 @@
             <!-- TAB 9: UPI Settings -->
             <section id="upi-settings-tab" class="tab-content bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-sm max-w-xl space-y-4">
                 <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
-                    <i data-lucide="qr-code" class="w-4 h-4 text-indigo-600"></i> UPI கட்டண அமைப்புகள்
+                    <i data-lucide="qr-code" class="w-4 h-4 text-indigo-600"></i> UPI Gateway Settings
                 </h2>
                 <form onsubmit="handleSaveUpiSettings(event)" class="space-y-3.5 text-xs sm:text-sm">
                     <div>
@@ -459,11 +540,11 @@
                         <input type="text" id="adminUpiId" required placeholder="9876543210@upi" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white font-mono">
                     </div>
                     <div>
-                        <label class="block font-bold text-slate-700 uppercase mb-1">கடையின் பெயர்</label>
-                        <input type="text" id="adminStoreName" required placeholder="நூல் கூடம் Store" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                        <label class="block font-bold text-slate-700 uppercase mb-1">Store Display Name</label>
+                        <input type="text" id="adminStoreName" required placeholder="Nool Koodam Store" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
                     </div>
                     <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow flex items-center gap-1.5 active:scale-95">
-                        <i data-lucide="save" class="w-3.5 h-3.5"></i> <span>அமைப்புகளைச் சேமி</span>
+                        <i data-lucide="save" class="w-3.5 h-3.5"></i> <span>Save Settings</span>
                     </button>
                 </form>
             </section>
@@ -471,26 +552,52 @@
             <!-- TAB 10: Security -->
             <section id="security-settings-tab" class="tab-content bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-sm max-w-xl space-y-4">
                 <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
-                    <i data-lucide="key" class="w-4 h-4 text-indigo-600"></i> அட்மின் கடவுச்சொல் மாற்றுதல்
+                    <i data-lucide="key" class="w-4 h-4 text-indigo-600"></i> Change Password
                 </h2>
                 <form onsubmit="handleChangePassword(event)" class="space-y-3.5 text-xs sm:text-sm">
                     <div>
-                        <label class="block font-bold text-slate-700 uppercase mb-1">புதிய பயனர்பெயர்</label>
+                        <label class="block font-bold text-slate-700 uppercase mb-1">New Username</label>
                         <input type="text" id="newAdminUser" required class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
                     </div>
                     <div>
-                        <label class="block font-bold text-slate-700 uppercase mb-1">புதிய கடவுச்சொல்</label>
+                        <label class="block font-bold text-slate-700 uppercase mb-1">New Password</label>
                         <input type="password" id="newAdminPass" required minlength="6" class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
                     </div>
                     <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow flex items-center gap-1.5 active:scale-95">
-                        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> <span>கடவுச்சொல்லைப் புதுப்பி</span>
+                        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> <span>Update Password</span>
                     </button>
                 </form>
             </section>
         </main>
     </div>
 
-    <!-- Edit Book Modal -->
+    <!-- Mobile Bottom Quick Navigation Bar -->
+    <div class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-lg border-t border-slate-200 px-4 py-2 flex justify-around items-center text-[10px] font-bold text-slate-500 shadow-2xl">
+        <button onclick="switchTab('orders-tab')" class="flex flex-col items-center gap-0.5 hover:text-indigo-600">
+            <i data-lucide="receipt" class="w-4 h-4"></i>
+            <span>Orders</span>
+        </button>
+        <button onclick="switchTab('tickets-tab')" class="flex flex-col items-center gap-0.5 hover:text-indigo-600 relative">
+            <i data-lucide="headset" class="w-4 h-4"></i>
+            <span>Tickets</span>
+        </button>
+        <button onclick="switchTab('add-book-tab')" class="flex flex-col items-center gap-0.5 text-indigo-600">
+            <div class="w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center -mt-3 shadow-lg">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+            </div>
+            <span>Add</span>
+        </button>
+        <button onclick="switchTab('inventory-tab')" class="flex flex-col items-center gap-0.5 hover:text-indigo-600">
+            <i data-lucide="book-copy" class="w-4 h-4"></i>
+            <span>Books</span>
+        </button>
+        <button onclick="toggleMobileDrawer()" class="flex flex-col items-center gap-0.5 text-slate-700">
+            <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+            <span>More</span>
+        </button>
+    </div>
+
+    <!-- Edit Modal -->
     <div id="editBookModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
         <div class="bg-white rounded-2xl sm:rounded-3xl max-w-lg w-full p-5 sm:p-7 space-y-3 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button onclick="closeModal('editBookModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1">
@@ -498,19 +605,19 @@
             </button>
             <div class="flex items-center gap-2">
                 <div class="p-2 bg-amber-50 text-amber-600 rounded-xl"><i data-lucide="edit" class="w-4 h-4"></i></div>
-                <h3 class="text-sm sm:text-base font-bold text-slate-900">புத்தகத்தைத் திருத்துக</h3>
+                <h3 class="text-sm sm:text-base font-bold text-slate-900">Edit Book</h3>
             </div>
             <form onsubmit="handleUpdateBook(event)" class="space-y-2.5 text-xs">
                 <input type="hidden" id="editBookIndex">
-                <div><label class="block font-bold text-slate-700 mb-0.5">தலைப்பு</label><input type="text" id="editTitle" required class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl"></div>
-                <div><label class="block font-bold text-slate-700 mb-0.5">ஆசிரியர்</label><input type="text" id="editAuthor" required class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl"></div>
+                <div><label class="block font-bold text-slate-700 mb-0.5">Title</label><input type="text" id="editTitle" required class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl"></div>
+                <div><label class="block font-bold text-slate-700 mb-0.5">Author</label><input type="text" id="editAuthor" required class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl"></div>
                 <div class="grid grid-cols-2 gap-2">
-                    <div><label class="block font-bold text-slate-700 mb-0.5">அசல் விலை</label><input type="number" id="editOrigPrice" required class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl"></div>
-                    <div><label class="block font-bold text-slate-700 mb-0.5">விற்பனை விலை</label><input type="number" id="editPrice" required class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl"></div>
+                    <div><label class="block font-bold text-slate-700 mb-0.5">Original Price</label><input type="number" id="editOrigPrice" required class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl"></div>
+                    <div><label class="block font-bold text-slate-700 mb-0.5">Selling Price</label><input type="number" id="editPrice" required class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl"></div>
                 </div>
-                <div><label class="block font-bold text-slate-700 mb-0.5">அட்டைப் படம் URL</label><input type="url" id="editCover" required class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl"></div>
-                <div><label class="block font-bold text-slate-700 mb-0.5">மாதிரி விளக்கம்</label><textarea id="editPreview" rows="2" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl"></textarea></div>
-                <button type="submit" class="w-full py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition shadow">மாற்றங்களைச் சேமி</button>
+                <div><label class="block font-bold text-slate-700 mb-0.5">Cover Image URL</label><input type="url" id="editCover" required class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs"></div>
+                <div><label class="block font-bold text-slate-700 mb-0.5">Sample Text</label><textarea id="editPreview" rows="2" class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl"></textarea></div>
+                <button type="submit" class="w-full py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition shadow">Save Changes</button>
             </form>
         </div>
     </div>
@@ -518,8 +625,22 @@
     <script>
         lucide.createIcons();
 
-        // Dual Language Dictionary for Admin Page
-        let currentAdminLang = localStorage.getItem('admin_lang') || 'ta';
+        // Mobile Drawer Toggle
+        function toggleMobileDrawer() {
+            const drawer = document.getElementById('mobileDrawer');
+            const backdrop = document.getElementById('drawerBackdrop');
+            const isOpen = !drawer.classList.contains('-translate-x-full');
+
+            if (isOpen) {
+                drawer.classList.add('-translate-x-full');
+                backdrop.classList.add('hidden');
+            } else {
+                drawer.classList.remove('-translate-x-full');
+                backdrop.classList.remove('hidden');
+            }
+        }
+
+        let currentAdminLang = localStorage.getItem('admin_lang') || 'en';
 
         const adminTranslations = {
             ta: {
@@ -587,7 +708,11 @@
         }
 
         function applyAdminLanguage() {
-            document.getElementById('adminLangBtnText').innerText = currentAdminLang === 'ta' ? 'EN' : 'தமிழ்';
+            const btnDesktop = document.getElementById('adminLangBtnText');
+            const btnMobile = document.getElementById('adminMobileLangBtn');
+            if (btnDesktop) btnDesktop.innerText = currentAdminLang === 'ta' ? 'EN' : 'தமிழ்';
+            if (btnMobile) btnMobile.innerText = currentAdminLang === 'ta' ? 'EN' : 'தமிழ்';
+
             document.querySelectorAll('[data-admin-i18n]').forEach(el => {
                 const k = el.getAttribute('data-admin-i18n');
                 if (adminTranslations[currentAdminLang][k]) {
@@ -597,14 +722,21 @@
             updateAdminClock();
         }
 
-        // Live Date & Clock Engine
         function updateAdminClock() {
             const now = new Date();
-            const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+            const dateOptions = { weekday: 'short', month: 'short', day: 'numeric' };
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const dateStr = now.toLocaleDateString(currentAdminLang === 'ta' ? 'ta-IN' : 'en-US', dateOptions);
+
             const dEl = document.getElementById('adminLiveDate');
             const cEl = document.getElementById('adminLiveClock');
-            if (dEl) dEl.innerText = now.toLocaleDateString(currentAdminLang === 'ta' ? 'ta-IN' : 'en-US', dateOptions);
-            if (cEl) cEl.innerText = now.toLocaleTimeString('en-US', { hour12: true });
+            const mdEl = document.getElementById('mobileDateText');
+            const mcEl = document.getElementById('mobileClockText');
+
+            if (dEl) dEl.innerText = dateStr;
+            if (cEl) cEl.innerText = timeStr;
+            if (mdEl) mdEl.innerText = dateStr;
+            if (mcEl) mcEl.innerText = timeStr;
         }
         setInterval(updateAdminClock, 1000);
         updateAdminClock();
@@ -639,10 +771,10 @@
                 sessionStorage.setItem('admin_authenticated', 'true');
                 document.getElementById('loginScreen').classList.add('hidden');
                 document.getElementById('adminApp').classList.remove('blur-sm');
-                showToast('அட்மின் உள்நுழைவு வெற்றிகரமாக முடிந்தது!');
+                showToast('Logged in successfully!');
                 renderAll();
             } else {
-                alert('தவறான பயனர்பெயர் அல்லது கடவுச்சொல்!');
+                alert('Invalid Username or Password!');
             }
         }
 
@@ -656,7 +788,7 @@
             const newU = document.getElementById('newAdminUser').value.trim();
             const newP = document.getElementById('newAdminPass').value.trim();
             localStorage.setItem('admin_credentials', JSON.stringify({ username: newU, password: newP }));
-            showToast('புதிய சான்றுகள் சேமிக்கப்பட்டன!');
+            showToast('New credentials saved!');
             e.target.reset();
         }
 
@@ -679,7 +811,8 @@
 
         function switchTab(tabId, btnElement) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
+            const targetTab = document.getElementById(tabId);
+            if (targetTab) targetTab.classList.add('active');
 
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.className = "tab-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl text-xs font-bold transition";
@@ -690,24 +823,25 @@
             }
 
             const titles = {
-                'orders-tab': 'UPI ஆர்டர்கள்',
-                'coupons-tab': 'கூப்பன்கள் மேலாண்மை',
-                'slides-tab': 'ஸ்லைடுகள் & AI படம்',
-                'tickets-tab': 'உதவி கோரிக்கைகள் (Support)',
-                'fraud-tab': 'மோசடி எச்சரிக்கை பலகை',
-                'inventory-tab': 'புத்தகங்கள் & டவுன்லோட்ஸ்',
-                'add-book-tab': 'புதிய புத்தகம் சேர்க்க',
+                'orders-tab': 'UPI Orders',
+                'coupons-tab': 'Coupons Manager',
+                'slides-tab': 'Slides & AI Visuals',
+                'tickets-tab': 'Support Tickets',
+                'fraud-tab': 'Fraud Alert Log',
+                'inventory-tab': 'Books Inventory',
+                'add-book-tab': 'Add New Book',
                 'backup-tab': 'Excel & Backup',
-                'upi-settings-tab': 'UPI கட்டண அமைப்புகள்',
-                'security-settings-tab': 'பாதுகாப்பு & கடவுச்சொல்'
+                'upi-settings-tab': 'UPI Settings',
+                'security-settings-tab': 'Security Settings'
             };
-            document.getElementById('currentTabTitle').innerText = titles[tabId];
+            const currentTitleEl = document.getElementById('currentTabTitle');
+            if (currentTitleEl) currentTitleEl.innerText = titles[tabId];
         }
 
         function exportOrdersToCSV() {
             const orders = JSON.parse(localStorage.getItem('ebook_orders') || '[]');
             if (orders.length === 0) {
-                showToast("ஏற்றுமதி செய்ய ஆர்டர்கள் ஏதுமில்லை!", "error");
+                showToast("No orders available to export!", "error");
                 return;
             }
 
@@ -725,7 +859,7 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            showToast("Excel (CSV) கோப்பு பதிவிறக்கம் செய்யப்பட்டது!");
+            showToast("CSV file exported successfully!");
         }
 
         function exportFullBackupJSON() {
@@ -743,7 +877,7 @@
             link.href = URL.createObjectURL(blob);
             link.download = `NoolKoodam_Full_Backup_${new Date().toISOString().slice(0,10)}.json`;
             link.click();
-            showToast("முழு Backup JSON கோப்பாக சேமிக்கப்பட்டது!");
+            showToast("Backup saved successfully!");
         }
 
         function handleCreateCoupon(e) {
@@ -755,7 +889,7 @@
             coupons.push({ code, percent });
             localStorage.setItem('admin_coupons_data', JSON.stringify(coupons));
             
-            showToast(`கூப்பன் ${code} உருவாக்கப்பட்டது!`);
+            showToast(`Coupon ${code} added!`);
             e.target.reset();
             renderCoupons();
         }
@@ -765,7 +899,7 @@
             const coupons = JSON.parse(localStorage.getItem('admin_coupons_data') || '[]');
 
             if (coupons.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="3" class="py-4 text-center text-slate-400">கூப்பன்கள் ஏதுமில்லை.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="3" class="py-4 text-center text-slate-400">No active coupons.</td></tr>`;
                 return;
             }
 
@@ -774,7 +908,7 @@
                     <td class="py-2 px-3 font-mono font-bold text-indigo-600">${c.code}</td>
                     <td class="py-2 px-3 font-bold">${c.percent}% OFF</td>
                     <td class="py-2 px-3 text-right">
-                        <button onclick="deleteCoupon(${idx})" class="text-rose-500 hover:underline">நீக்கு</button>
+                        <button onclick="deleteCoupon(${idx})" class="text-rose-500 hover:underline">Delete</button>
                     </td>
                 </tr>
             `).join('');
@@ -785,7 +919,7 @@
             coupons.splice(idx, 1);
             localStorage.setItem('admin_coupons_data', JSON.stringify(coupons));
             renderCoupons();
-            showToast("கூப்பன் நீக்கப்பட்டது.");
+            showToast("Coupon deleted.");
         }
 
         function renderOrders() {
@@ -794,26 +928,26 @@
 
             let totalRev = 0;
             orders.forEach(o => {
-                if (o.status === 'அனுப்பப்பட்டது') totalRev += Number(o.amount);
+                if (o.status === 'அனுப்பப்பட்டது' || o.status === 'Approved') totalRev += Number(o.amount);
             });
 
             document.getElementById('statRevenue').innerText = '₹' + totalRev;
             document.getElementById('statOrders').innerText = orders.length;
 
             if (orders.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="9" class="py-6 text-center text-slate-400 text-xs">ஆர்டர்கள் ஏதுமில்லை.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="9" class="py-6 text-center text-slate-400 text-xs">No customer orders recorded yet.</td></tr>`;
                 return;
             }
 
             tableBody.innerHTML = orders.map((ord, idx) => {
                 let badgeClass = "bg-amber-100 text-amber-700";
-                if (ord.status === 'அனுப்பப்பட்டது') badgeClass = "bg-emerald-100 text-emerald-700";
-                else if (ord.status === 'நிராகரிக்கப்பட்டது') badgeClass = "bg-rose-100 text-rose-700";
+                if (ord.status === 'அனுப்பப்பட்டது' || ord.status === 'Approved') badgeClass = "bg-emerald-100 text-emerald-700";
+                else if (ord.status === 'நிராகரிக்கப்பட்டது' || ord.status === 'Rejected') badgeClass = "bg-rose-100 text-rose-700";
 
                 return `
                     <tr class="hover:bg-slate-50 transition text-xs">
                         <td class="py-2.5 px-3 font-bold text-indigo-600">${ord.id}</td>
-                        <td class="py-2.5 px-3 font-bold text-slate-800">${ord.customerName || 'பயனர்'}</td>
+                        <td class="py-2.5 px-3 font-bold text-slate-800">${ord.customerName || 'User'}</td>
                         <td class="py-2.5 px-3 font-mono">${ord.customerMobile || '-'}</td>
                         <td class="py-2.5 px-3 truncate max-w-[130px]">${ord.bookTitle}</td>
                         <td class="py-2.5 px-3 font-bold">₹${ord.amount}</td>
@@ -824,20 +958,20 @@
                             </span>
                         </td>
                         <td class="py-2.5 px-3">
-                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${badgeClass}">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeClass}">
                                 ${ord.status}
                             </span>
                         </td>
                         <td class="py-2.5 px-3 text-right">
-                            ${ord.status === 'சரிபார்க்கப்பட வேண்டும்' ? `
+                            ${ord.status === 'சரிபார்க்கப்பட வேண்டும்' || ord.status === 'Pending' ? `
                                 <div class="flex items-center justify-end gap-1">
-                                    <button onclick="approveOrder(${idx})" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[11px] font-bold transition">அனுமதி</button>
-                                    <button onclick="rejectOrder(${idx})" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-md text-[11px] font-bold transition">நிராகரி</button>
+                                    <button onclick="approveOrder(${idx})" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[11px] font-bold transition">Approve</button>
+                                    <button onclick="rejectOrder(${idx})" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-md text-[11px] font-bold transition">Reject</button>
                                 </div>
                             ` : `
                                 <div class="flex items-center justify-end gap-1">
                                     <span class="text-[11px] text-slate-400 font-bold">${ord.status}</span>
-                                    <a href="https://wa.me/91${ord.customerMobile}?text=${encodeURIComponent('வணக்கம் ' + ord.customerName + ', உங்கள் புத்தகம் (' + ord.bookTitle + ') அனுமதிக்கப்பட்டது! தளத்தில் இருந்து பதிவிறக்கலாம்.')}" target="_blank" class="p-1 text-emerald-600 hover:bg-emerald-50 rounded" title="WhatsApp Alert"><i data-lucide="send" class="w-3.5 h-3.5"></i></a>
+                                    <a href="https://wa.me/91${ord.customerMobile}?text=${encodeURIComponent('Hello ' + ord.customerName + ', your order for ' + ord.bookTitle + ' has been approved! You can now download it on the website.')}" target="_blank" class="p-1 text-emerald-600 hover:bg-emerald-50 rounded" title="WhatsApp Alert"><i data-lucide="send" class="w-3.5 h-3.5"></i></a>
                                 </div>
                             `}
                         </td>
@@ -849,27 +983,27 @@
 
         function approveOrder(idx) {
             const orders = JSON.parse(localStorage.getItem('ebook_orders') || '[]');
-            orders[idx].status = 'அனுப்பப்பட்டது';
+            orders[idx].status = 'Approved';
             localStorage.setItem('ebook_orders', JSON.stringify(orders));
-            showToast(`ஆர்டர் ${orders[idx].id} அனுமதிக்கப்பட்டது!`);
+            showToast(`Order ${orders[idx].id} Approved!`);
             renderOrders();
         }
 
         function rejectOrder(idx) {
-            if (!confirm('இந்த ஆர்டரை நிராகரிக்கவா?')) return;
+            if (!confirm('Reject this order?')) return;
             const orders = JSON.parse(localStorage.getItem('ebook_orders') || '[]');
-            orders[idx].status = 'நிராகரிக்கப்பட்டது';
+            orders[idx].status = 'Rejected';
             localStorage.setItem('ebook_orders', JSON.stringify(orders));
-            showToast(`ஆர்டர் நிராகரிக்கப்பட்டது!`, 'error');
+            showToast(`Order rejected!`, 'error');
             renderOrders();
         }
 
         function clearCompletedOrders() {
-            if (!confirm('முடிந்த ஆர்டர்களை நீக்கவா?')) return;
+            if (!confirm('Clear completed orders?')) return;
             const orders = JSON.parse(localStorage.getItem('ebook_orders') || '[]');
-            const activeOnly = orders.filter(o => o.status === 'சரிபார்க்கப்பட வேண்டும்');
+            const activeOnly = orders.filter(o => o.status === 'சரிபார்க்கப்பட வேண்டும்' || o.status === 'Pending');
             localStorage.setItem('ebook_orders', JSON.stringify(activeOnly));
-            showToast('பழைய ஆர்டர்கள் நீக்கப்பட்டன.');
+            showToast('Finished orders cleared.');
             renderOrders();
         }
 
@@ -879,9 +1013,11 @@
 
             document.getElementById('statTicketCount').innerText = tickets.length;
             document.getElementById('badgeTicketCount').innerText = tickets.length;
+            const badgeDrawer = document.getElementById('badgeTicketDrawer');
+            if (badgeDrawer) badgeDrawer.innerText = tickets.length;
 
             if (tickets.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400 text-xs">எந்த உதவி கோரிக்கைகளும் இல்லை.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400 text-xs">No pending support tickets.</td></tr>`;
                 return;
             }
 
@@ -895,7 +1031,7 @@
                     <td class="py-2.5 px-3 text-slate-400 text-[11px]">${t.date}</td>
                     <td class="py-2.5 px-3 text-right">
                         <div class="flex items-center justify-end gap-1.5">
-                            <a href="https://wa.me/91${t.phone}?text=${encodeURIComponent('வணக்கம் ' + t.name + ', உதவி கோரிக்கை (' + t.id + ') தொடர்பாகத் தொடர்புகொள்கிறோம்.')}" target="_blank" class="px-2 py-1 bg-emerald-600 text-white rounded-md text-[10px] font-bold hover:bg-emerald-700 flex items-center gap-1">
+                            <a href="https://wa.me/91${t.phone}?text=${encodeURIComponent('Hello ' + t.name + ', we are reaching out regarding your support request (' + t.id + ').')}" target="_blank" class="px-2 py-1 bg-emerald-600 text-white rounded-md text-[10px] font-bold hover:bg-emerald-700 flex items-center gap-1">
                                 <i data-lucide="message-circle" class="w-3 h-3"></i> WhatsApp
                             </a>
                         </div>
@@ -906,9 +1042,9 @@
         }
 
         function clearSupportTickets() {
-            if (!confirm('உதவி கோரிக்கைகளை அழிக்கவா?')) return;
+            if (!confirm('Clear all support tickets?')) return;
             localStorage.removeItem('admin_support_tickets');
-            showToast('உதவி கோரிக்கைகள் அழிக்கப்பட்டன.');
+            showToast('Tickets cleared.');
             renderSupportTickets();
         }
 
@@ -919,9 +1055,11 @@
 
             document.getElementById('statFraudCount').innerText = fraudList.length;
             document.getElementById('badgeFraudCount').innerText = fraudList.length;
+            const badgeDrawer = document.getElementById('badgeFraudDrawer');
+            if (badgeDrawer) badgeDrawer.innerText = fraudList.length;
 
             if (fraudList.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400 text-xs">மோசடி எச்சரிக்கைகள் ஏதுமில்லை.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400 text-xs">No fraud logs registered.</td></tr>`;
                 return;
             }
 
@@ -937,7 +1075,7 @@
                         <td class="py-2.5 px-3"><span class="bg-rose-100 text-rose-800 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold">${frd.lastUtr}</span></td>
                         <td class="py-2.5 px-3">
                             <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${frd.attempts >= 2 ? 'bg-rose-600 text-white animate-pulse' : 'bg-amber-100 text-amber-800'}">
-                                ${frd.attempts} முறை
+                                ${frd.attempts} Alerts
                             </span>
                         </td>
                         <td class="py-2.5 px-3 text-right">
@@ -945,7 +1083,7 @@
                                 <button onclick="unblockUser('${frd.email}', '${frd.mobile}')" class="px-2.5 py-1 bg-slate-200 text-slate-700 rounded-md text-[10px] font-bold">Unblock</button>
                             ` : `
                                 <button onclick="blockUser('${frd.email}', '${frd.mobile}', '${frd.name}')" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-md text-[10px] font-bold ml-auto flex items-center gap-1">
-                                    <i data-lucide="ban" class="w-3 h-3"></i> பிளாக்
+                                    <i data-lucide="ban" class="w-3 h-3"></i> Block
                                 </button>
                             `}
                         </td>
@@ -956,11 +1094,11 @@
         }
 
         function blockUser(email, mobile, name) {
-            if (!confirm(`நிச்சயமாக ${name} (${mobile}) என்பவரை பிளாக் செய்யவா?`)) return;
+            if (!confirm(`Block ${name} (${mobile})?`)) return;
             const blockedUsers = JSON.parse(localStorage.getItem('admin_blocked_users') || '[]');
-            blockedUsers.push({ email, mobile, name, date: new Date().toLocaleDateString('ta-IN') });
+            blockedUsers.push({ email, mobile, name, date: new Date().toLocaleDateString('en-US') });
             localStorage.setItem('admin_blocked_users', JSON.stringify(blockedUsers));
-            showToast(`${name} பிளாக் செய்யப்பட்டார்!`, 'error');
+            showToast(`${name} has been blocked!`, 'error');
             renderFraudAlerts();
         }
 
@@ -968,14 +1106,14 @@
             let blockedUsers = JSON.parse(localStorage.getItem('admin_blocked_users') || '[]');
             blockedUsers = blockedUsers.filter(b => b.email !== email && b.mobile !== mobile);
             localStorage.setItem('admin_blocked_users', JSON.stringify(blockedUsers));
-            showToast('வாடிக்கையாளர் Unblock செய்யப்பட்டார்!');
+            showToast('User has been unblocked.');
             renderFraudAlerts();
         }
 
         function clearFraudLogs() {
-            if (!confirm('மோசடிப் பட்டியலை அழிக்கவா?')) return;
+            if (!confirm('Clear all fraud alerts?')) return;
             localStorage.removeItem('admin_fraud_alerts');
-            showToast('பட்டியல் அழிக்கப்பட்டது.');
+            showToast('Fraud logs cleared.');
             renderFraudAlerts();
         }
 
@@ -984,18 +1122,18 @@
             const books = JSON.parse(localStorage.getItem('ebook_inventory') || '[]');
 
             if (books.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 py-4 col-span-1 sm:col-span-3">புத்தகங்கள் ஏதுமில்லை.</p>`;
+                container.innerHTML = `<p class="text-xs text-slate-400 py-4 col-span-1 sm:col-span-3">No books available in library.</p>`;
                 return;
             }
 
             container.innerHTML = books.map((b, idx) => `
-                <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between gap-3">
+                <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between gap-3">
                     <img src="${b.cover}" class="w-12 h-16 object-cover rounded-lg bg-slate-200 shrink-0">
                     <div class="flex-1 min-w-0">
                         <h4 class="font-bold text-xs sm:text-sm text-slate-900 truncate">${b.title}</h4>
                         <p class="text-[11px] text-slate-500 truncate">${b.author}</p>
                         <p class="text-xs font-bold text-emerald-600 mt-0.5">₹${b.price}</p>
-                        <span class="inline-block mt-0.5 px-2 py-0.5 bg-cyan-100 text-cyan-800 rounded text-[9px] font-extrabold">டவுன்லோட்: ${b.totalDownloads || 0} முறை</span>
+                        <span class="inline-block mt-0.5 px-2 py-0.5 bg-cyan-100 text-cyan-800 rounded text-[9px] font-extrabold">Downloads: ${b.totalDownloads || 0}</span>
                     </div>
                     <div class="flex flex-col gap-1">
                         <button onclick="openEditModal(${idx})" class="p-1.5 text-indigo-600 hover:bg-indigo-100 rounded-lg transition"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
@@ -1033,24 +1171,33 @@
 
             localStorage.setItem('ebook_inventory', JSON.stringify(books));
             closeModal('editBookModal');
-            showToast('புத்தக விவரங்கள் புதுப்பிக்கப்பட்டன!');
+            showToast('Book details updated!');
             renderBooksInventory();
         }
 
         function deleteBook(idx) {
-            if (!confirm('இந்தப் புத்தகத்தை நீக்கவா?')) return;
+            if (!confirm('Delete this book?')) return;
             const books = JSON.parse(localStorage.getItem('ebook_inventory') || '[]');
             books.splice(idx, 1);
             localStorage.setItem('ebook_inventory', JSON.stringify(books));
-            showToast('புத்தகம் நீக்கப்பட்டது.');
+            showToast('Book deleted.');
             renderBooksInventory();
+        }
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
         }
 
         async function handleAddNewBook(e) {
             e.preventDefault();
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
-            submitBtn.innerText = "பதிவேற்றப்படுகிறது...";
+            submitBtn.innerText = "Publishing...";
 
             try {
                 const title = document.getElementById('newBookTitle').value.trim();
@@ -1060,9 +1207,9 @@
                 
                 const pdfInput = document.getElementById('newBookPdfFile');
                 if (!pdfInput.files || pdfInput.files.length === 0) {
-                    showToast('PDF கோப்பைத் தேர்ந்தெடுக்கவும்!', 'error');
+                    showToast('Please attach a PDF file!', 'error');
                     submitBtn.disabled = false;
-                    submitBtn.innerText = "இணையதளத்தில் சேர்க்கவும்";
+                    submitBtn.innerText = "Publish to Store";
                     return;
                 }
                 const pdfFile = pdfInput.files[0];
@@ -1080,7 +1227,7 @@
 
                 let previewText = document.getElementById('newBookPreview').value.trim();
                 if (!previewText) {
-                    previewText = `${title} என்பது ${author} அவர்களின் சிறந்த மின்புத்தகமாகும்.`;
+                    previewText = `${title} is an insightful work written by ${author}.`;
                 }
 
                 const newBook = {
@@ -1099,21 +1246,21 @@
                 try {
                     localStorage.setItem('ebook_inventory', JSON.stringify(books));
                 } catch (err) {
-                    showToast('சேமிப்பக வரம்பு நிறைவடைந்தது. சிறிய PDF-ஐப் பயன்படுத்தவும்.', 'error');
+                    showToast('Local storage full. Try with smaller PDF size.', 'error');
                     submitBtn.disabled = false;
-                    submitBtn.innerText = "இணையதளத்தில் சேர்க்கவும்";
+                    submitBtn.innerText = "Publish to Store";
                     return;
                 }
 
-                showToast('புத்தகம் வெற்றிகரமாகச் சேர்க்கப்பட்டது!');
+                showToast('New book published!');
                 document.getElementById('addBookForm').reset();
                 renderBooksInventory();
                 switchTab('inventory-tab');
             } catch (err) {
-                showToast('பிழை: கோப்பை ஏற்றுவதில் சிக்கல்.', 'error');
+                showToast('Error uploading file.', 'error');
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> <span>இணையதளத்தில் சேர்க்கவும்</span>`;
+                submitBtn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> <span>Publish to Store</span>`;
                 lucide.createIcons();
             }
         }
@@ -1125,9 +1272,9 @@
             container.innerHTML = slides.map((s, idx) => `
                 <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-2.5">
                     <div class="flex justify-between items-center">
-                        <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">ஸ்லைடு ${idx + 1}</span>
+                        <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">Slide ${idx + 1}</span>
                         <button onclick="generateAiSlideImage(${idx})" class="text-[10px] font-bold text-amber-700 bg-amber-100 hover:bg-amber-200 px-2 py-1 rounded-lg transition flex items-center gap-1">
-                            <i data-lucide="sparkles" class="w-3 h-3 text-amber-600"></i> AI படம் உருவாக்கு
+                            <i data-lucide="sparkles" class="w-3 h-3 text-amber-600"></i> AI Image
                         </button>
                     </div>
 
@@ -1137,21 +1284,21 @@
 
                     <div class="space-y-1.5 text-xs">
                         <div>
-                            <label class="block font-bold text-slate-600 mb-0.5">தலைப்பு</label>
+                            <label class="block font-bold text-slate-600 mb-0.5">Title</label>
                             <input type="text" id="slideTitle_${idx}" value="${s.title}" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg">
                         </div>
                         <div>
-                            <label class="block font-bold text-slate-600 mb-0.5">விளக்கம்</label>
+                            <label class="block font-bold text-slate-600 mb-0.5">Description</label>
                             <textarea id="slideDesc_${idx}" rows="2" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg">${s.desc}</textarea>
                         </div>
                         <div>
-                            <label class="block font-bold text-slate-600 mb-0.5">பட URL</label>
+                            <label class="block font-bold text-slate-600 mb-0.5">Image URL</label>
                             <input type="url" id="slideImage_${idx}" value="${s.bgImage}" onchange="document.getElementById('slideImgPreview_${idx}').src = this.value" class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg font-mono text-[10px]">
                         </div>
                     </div>
 
                     <button onclick="saveSingleSlide(${idx})" class="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition flex items-center justify-center gap-1">
-                        <i data-lucide="save" class="w-3.5 h-3.5"></i> மாற்றங்களைச் சேமி
+                        <i data-lucide="save" class="w-3.5 h-3.5"></i> Save Slide
                     </button>
                 </div>
             `).join('');
@@ -1159,16 +1306,16 @@
         }
 
         function generateAiSlideImage(idx) {
-            const title = document.getElementById(`slideTitle_${idx}`).value.trim() || "technology library e-book wallpaper";
-            showToast("AI படம் உருவாக்கப்படுகிறது...", "success");
+            const title = document.getElementById(`slideTitle_${idx}`).value.trim() || "modern technology library";
+            showToast("Generating AI visual...", "success");
 
-            const prompt = encodeURIComponent(title + " cinematic photorealistic 4k library wallpaper");
+            const prompt = encodeURIComponent(title + " cinematic library wallpaper");
             const seed = Math.floor(Math.random() * 999999);
             const aiImageUrl = `https://image.pollinations.ai/prompt/${prompt}?width=1600&height=800&nologo=true&seed=${seed}`;
 
             document.getElementById(`slideImage_${idx}`).value = aiImageUrl;
             document.getElementById(`slideImgPreview_${idx}`).src = aiImageUrl;
-            showToast("AI படம் உருவாக்கப்பட்டது!");
+            showToast("AI image updated!");
         }
 
         function saveSingleSlide(idx) {
@@ -1178,13 +1325,13 @@
             slides[idx].bgImage = document.getElementById(`slideImage_${idx}`).value.trim();
 
             localStorage.setItem('admin_slides_data', JSON.stringify(slides));
-            showToast(`ஸ்லைடு ${idx + 1} புதுப்பிக்கப்பட்டது!`);
+            showToast(`Slide ${idx + 1} saved!`);
         }
 
         function resetDefaultSlides() {
-            if (!confirm('ஸ்லைடுகளை இயல்புநிலைக்கு மாற்றவா?')) return;
+            if (!confirm('Reset all slides to default?')) return;
             localStorage.removeItem('admin_slides_data');
-            showToast('ஸ்லைடுகள் இயல்புநிலைக்கு மாற்றப்பட்டன.');
+            showToast('Slides reset.');
             renderSlidesEditor();
         }
 
@@ -1200,20 +1347,11 @@
             const storeName = document.getElementById('adminStoreName').value.trim();
 
             localStorage.setItem('admin_upi_settings', JSON.stringify({ upiId, storeName }));
-            showToast('UPI அமைப்புகள் சேமிக்கப்பட்டன!');
+            showToast('UPI settings saved!');
         }
 
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-        function fileToBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-            });
-        }
 
         function renderAll() {
             renderOrders();
