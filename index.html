@@ -7,7 +7,6 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- PDF-Lib for Client-Side Dynamic Watermarking & Automated Invoices -->
     <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -17,7 +16,6 @@
             font-family: 'Plus Jakarta Sans', sans-serif; 
             -webkit-tap-highlight-color: transparent;
             -webkit-user-select: none;
-            -ms-user-select: none;
             user-select: none;
         }
         .glassmorphism {
@@ -57,7 +55,6 @@
         }
         #toast.show { transform: translateY(0) scale(1); }
 
-        /* Print Screen Blocker */
         @media print {
             body { display: none !important; }
         }
@@ -122,7 +119,7 @@
         </div>
     </header>
 
-    <!-- Mobile Bottom Quick Navigation -->
+    <!-- Mobile Quick Navigation -->
     <div class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-lg border-t border-slate-200 px-4 py-2 flex justify-around items-center text-[10px] font-bold text-slate-500 shadow-2xl">
         <button onclick="navigateTo('home-view')" id="mobNav-home-view" class="mob-tab-btn btn-anim flex flex-col items-center gap-0.5 text-indigo-600">
             <i data-lucide="home" class="w-4 h-4"></i>
@@ -147,7 +144,6 @@
         <section class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-6">
             <div class="relative overflow-hidden rounded-2xl sm:rounded-3xl shadow-xl bg-slate-950 text-white h-[340px] sm:h-[420px] w-full border border-slate-800">
                 <div id="slidesContainer" class="w-full h-full relative overflow-hidden"></div>
-
                 <button onclick="prevSlide()" class="btn-anim absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-slate-900/70 hover:bg-slate-900 text-white backdrop-blur border border-slate-700 transition z-20">
                     <i data-lucide="chevron-left" class="w-5 h-5"></i>
                 </button>
@@ -158,7 +154,7 @@
             </div>
         </section>
 
-        <!-- Animated Steps -->
+        <!-- Steps Section -->
         <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
             <div class="text-center max-w-2xl mx-auto mb-10">
                 <span class="px-3.5 py-1 bg-indigo-50 text-indigo-600 border border-indigo-100 text-xs font-extrabold rounded-full inline-block mb-2" data-i18n="stepTag">எளிமையான 3 படிகள்</span>
@@ -172,17 +168,15 @@
                     <h4 class="font-bold text-slate-900 text-base mb-1" data-i18n="step1Title">புத்தகத்தைத் தேர்ந்தெடுங்கள்</h4>
                     <p class="text-slate-500 text-xs leading-relaxed" data-i18n="step1Desc">புத்தக அங்காடிக்குச் சென்று உங்களுக்குப் பிடித்த புத்தகத்தின் <b>"இப்போதே வாங்க"</b> பொத்தானை அழுத்தவும்.</p>
                 </div>
-
                 <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-md hover:-translate-y-1 transition duration-300 relative group">
                     <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center font-black text-lg mb-4 group-hover:scale-110 transition">2</div>
                     <h4 class="font-bold text-slate-900 text-base mb-1" data-i18n="step2Title">விவரங்களை உள்ளிட்டு செலுத்தவும்</h4>
-                    <p class="text-slate-500 text-xs leading-relaxed" data-i18n="step2Desc">கூப்பன் மற்றும் உங்கள் விவரங்களை நிரப்பி, அடுத்த பக்கத்தில் QR அல்லது UPI ஆப் மூலம் பணம் செலுத்துங்கள்.</p>
+                    <p class="text-slate-500 text-xs leading-relaxed" data-i18n="step2Desc">கூப்பன் மற்றும் விவரங்களை நிரப்பி, அடுத்த பக்கத்தில் QR அல்லது UPI ஆப் மூலம் பணம் செலுத்துங்கள்.</p>
                 </div>
-
                 <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm hover:shadow-md hover:-translate-y-1 transition duration-300 relative group">
                     <div class="w-12 h-12 bg-cyan-50 text-cyan-600 rounded-2xl flex items-center justify-center font-black text-lg mb-4 group-hover:scale-110 transition">3</div>
                     <h4 class="font-bold text-slate-900 text-base mb-1" data-i18n="step3Title">உடனடி PDF பதிவிறக்கம்</h4>
-                    <p class="text-slate-500 text-xs leading-relaxed" data-i18n="step3Desc">அட்மின் சரிபார்த்த சில நிமிடங்களில், "புத்தகத்தைப் பெறுக" பக்கத்தில் உங்கள் வாட்டர்மார்க் PDF-ஐப் பெறலாம்.</p>
+                    <p class="text-slate-500 text-xs leading-relaxed" data-i18n="step3Desc">அட்மின் சரிபார்த்த சில நிமிடங்களில் உங்கள் PDF மற்றும் ரசீதைப் பதிவிறக்கிக் கொள்ளலாம்.</p>
                 </div>
             </div>
         </section>
@@ -215,7 +209,7 @@
                         <span class="px-3 py-1 bg-indigo-500/30 text-indigo-300 border border-indigo-400/30 text-xs font-bold rounded-full" data-i18n="supportBadge">கட்டண உதவி மையம்</span>
                         <h3 class="text-3xl font-black tracking-tight" data-i18n="supportHeading">பணம் செலுத்துவதில் சிக்கலா?</h3>
                         <p class="text-slate-300 text-xs sm:text-sm leading-relaxed" data-i18n="supportDesc">
-                            பணம் கழிக்கப்பட்டு புத்தகம் பதிவிறக்கம் ஆகவில்லையா அல்லது UTR பிழை உள்ளதா? கீழே உங்கள் விவரங்களைப் பதிவிடுங்கள்; அட்மின் பலகையில் உடனே சரிபார்க்கப்படும்.
+                            பணம் கழிக்கப்பட்டு புத்தகம் பதிவிறக்கம் ஆகவில்லையா அல்லது UTR பிழை உள்ளதா? விவரங்களை அட்மினுக்கு அனுப்பவும்.
                         </p>
                     </div>
 
@@ -247,6 +241,7 @@
                     </div>
                 </div>
 
+                <!-- Input Field with Auto-Clear upon Search -->
                 <form onsubmit="verifyDownload(event)" class="space-y-3">
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1" data-i18n="dlLabel">தேடல் குறியீடு (UTR அல்லது Mobile)</label>
@@ -419,7 +414,7 @@
                         <li><span class="text-rose-400 font-bold">No Refund Policy</span></li>
                         <li><span>Max 3 Downloads Cap</span></li>
                         <li><span>Right-Click & Copy Protected</span></li>
-                        <li><span>Dynamic Watermarking</span></li>
+                        <li><span>Selective Watermark Support</span></li>
                     </ul>
                 </div>
 
@@ -439,16 +434,13 @@
     <script>
         lucide.createIcons();
 
-        // 1. Anti-Copy & Print Protection
         document.addEventListener('keydown', (e) => {
-            // Block Ctrl+P (Print), Ctrl+S (Save), Ctrl+U (View Source)
             if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 's' || e.key === 'u')) {
                 e.preventDefault();
                 showToast("பாதுகாப்பு காரணங்களுக்காக அச்சிட அல்லது சேமிக்க அனுமதி இல்லை!", "error");
             }
         });
 
-        // 2. Language Engine
         let currentLang = localStorage.getItem('site_lang') || 'ta';
 
         const translations = {
@@ -608,7 +600,6 @@
             setTimeout(() => toast.classList.remove('show'), 3500);
         }
 
-        // Slides Setup
         const DEFAULT_SLIDES = [
             {
                 tag: "1 / 3 • சலுகை",
@@ -724,7 +715,6 @@
             });
         }
 
-        // Checkout Process
         let activeBook = { title: '', originalAmount: 0, currentAmount: 0 };
         function goToCheckout(title, amount) {
             activeBook = { title: title, originalAmount: amount, currentAmount: amount };
@@ -858,10 +848,15 @@
             navigateTo('download-view');
         }
 
-        // Verification & Download with Selective Watermark Check
+        // 4. Verification & Auto-Clear of Search Input
         function verifyDownload(e) {
             e.preventDefault();
-            const val = document.getElementById('searchUtr').value.trim().toLowerCase();
+            const searchInput = document.getElementById('searchUtr');
+            const val = searchInput.value.trim().toLowerCase();
+            
+            // Auto clear immediately for security so other customers cannot see or use it
+            searchInput.value = '';
+
             const orders = JSON.parse(localStorage.getItem('ebook_orders') || '[]');
             const res = document.getElementById('downloadResult');
 
@@ -935,7 +930,6 @@
             lucide.createIcons();
         }
 
-        // Selective Watermarking and Direct Download Engine
         async function downloadBookPdf(orderId) {
             const orders = JSON.parse(localStorage.getItem('ebook_orders') || '[]');
             const index = orders.findIndex(o => o.id === orderId);
@@ -950,11 +944,9 @@
                 return;
             }
 
-            // Check if admin enabled watermark for this specific book
             const isWatermarkEnabled = matchedBook.enableWatermark !== false;
 
             if (!isWatermarkEnabled) {
-                // Direct download without watermark
                 const link = document.createElement('a');
                 link.href = matchedBook.pdfData;
                 link.download = `${ord.bookTitle}.pdf`;
@@ -1012,45 +1004,65 @@
             showToast(`பதிவிறக்கம் செய்யப்பட்டது (${orders[index].downloadCount}/3).`);
         }
 
-        // Automated PDF Invoice Generator using PDF-Lib
+        // Professional Colorful PDF Tax Invoice Generator
         async function downloadAutomatedInvoice(orderId) {
             const orders = JSON.parse(localStorage.getItem('ebook_orders') || '[]');
             const ord = orders.find(o => o.id === orderId);
             if (!ord) return;
 
-            showToast("ரசீது PDF தயாராகிறது...", "success");
+            showToast("வண்ணமயமான ரசீது PDF தயாராகிறது...", "success");
 
             try {
                 const pdfDoc = await PDFLib.PDFDocument.create();
-                const page = pdfDoc.addPage([500, 650]);
+                const page = pdfDoc.addPage([550, 700]);
                 const fontBold = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
                 const fontNorm = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
 
-                page.drawText('NOOL KOODAM E-BOOK STORE', { x: 50, y: 590, size: 16, font: fontBold, color: PDFLib.rgb(0.2, 0.3, 0.8) });
-                page.drawText('TAX INVOICE / RECEIPT', { x: 50, y: 565, size: 12, font: fontBold, color: PDFLib.rgb(0.2, 0.2, 0.2) });
-                page.drawLine({ start: { x: 50, y: 550 }, end: { x: 450, y: 550 }, thickness: 1, color: PDFLib.rgb(0.8, 0.8, 0.8) });
+                // Top Banner with Dark Indigo Gradient Feel
+                page.drawRectangle({ x: 0, y: 620, width: 550, height: 80, color: PDFLib.rgb(0.18, 0.22, 0.55) });
+                page.drawText('NOOL KOODAM DIGITAL STORE', { x: 40, y: 655, size: 16, font: fontBold, color: PDFLib.rgb(1, 1, 1) });
+                page.drawText('OFFICIAL DIGITAL TAX INVOICE', { x: 40, y: 635, size: 9, font: fontNorm, color: PDFLib.rgb(0.85, 0.88, 1) });
+                page.drawText('PAID & VERIFIED', { x: 420, y: 645, size: 10, font: fontBold, color: PDFLib.rgb(0.3, 0.9, 0.5) });
 
-                page.drawText(`Order ID: ${ord.id}`, { x: 50, y: 520, size: 10, font: fontBold });
-                page.drawText(`Date: ${ord.date}`, { x: 300, y: 520, size: 10, font: fontNorm });
-                page.drawText(`Customer Name: ${ord.customerName}`, { x: 50, y: 490, size: 10, font: fontNorm });
-                page.drawText(`Mobile Number: ${ord.customerMobile}`, { x: 50, y: 470, size: 10, font: fontNorm });
-                page.drawText(`Email Address: ${ord.email}`, { x: 50, y: 450, size: 10, font: fontNorm });
-                page.drawText(`UTR / Trans ID: ${ord.utr}`, { x: 50, y: 430, size: 10, font: fontNorm });
+                // Invoice Meta Details
+                page.drawText(`Invoice No: INV-${ord.id}`, { x: 40, y: 580, size: 10, font: fontBold, color: PDFLib.rgb(0.2, 0.2, 0.2) });
+                page.drawText(`Date: ${ord.date}`, { x: 380, y: 580, size: 10, font: fontNorm, color: PDFLib.rgb(0.4, 0.4, 0.4) });
 
-                page.drawRectangle({ x: 50, y: 350, width: 400, height: 40, color: PDFLib.rgb(0.95, 0.95, 0.98) });
-                page.drawText('Item Description', { x: 60, y: 365, size: 10, font: fontBold, color: PDFLib.rgb(0.2, 0.2, 0.2) });
-                page.drawText('Price', { x: 390, y: 365, size: 10, font: fontBold, color: PDFLib.rgb(0.2, 0.2, 0.2) });
+                page.drawRectangle({ x: 40, y: 470, width: 470, height: 95, color: PDFLib.rgb(0.97, 0.98, 1), borderColor: PDFLib.rgb(0.85, 0.9, 0.98), borderWidth: 1 });
+                page.drawText('BILLED TO (CUSTOMER DETAILS)', { x: 55, y: 545, size: 8, font: fontBold, color: PDFLib.rgb(0.4, 0.4, 0.6) });
+                page.drawText(`Customer Name : ${ord.customerName}`, { x: 55, y: 525, size: 10, font: fontBold });
+                page.drawText(`Mobile Number : ${ord.customerMobile}`, { x: 55, y: 505, size: 10, font: fontNorm });
+                page.drawText(`Email Address : ${ord.email}`, { x: 55, y: 485, size: 10, font: fontNorm });
+                page.drawText(`UPI UTR / Ref : ${ord.utr}`, { x: 280, y: 485, size: 9, font: fontBold, color: PDFLib.rgb(0.2, 0.4, 0.8) });
 
-                page.drawText(`${ord.bookTitle} (Digital E-Book PDF)`, { x: 60, y: 320, size: 10, font: fontNorm });
-                page.drawText(`Rs. ${ord.amount}.00`, { x: 390, y: 320, size: 10, font: fontBold, color: PDFLib.rgb(0.1, 0.6, 0.3) });
+                // Table Header
+                page.drawRectangle({ x: 40, y: 400, width: 470, height: 35, color: PDFLib.rgb(0.25, 0.32, 0.65) });
+                page.drawText('ITEM DESCRIPTION', { x: 55, y: 412, size: 9, font: fontBold, color: PDFLib.rgb(1, 1, 1) });
+                page.drawText('QTY', { x: 320, y: 412, size: 9, font: fontBold, color: PDFLib.rgb(1, 1, 1) });
+                page.drawText('AMOUNT (INR)', { x: 410, y: 412, size: 9, font: fontBold, color: PDFLib.rgb(1, 1, 1) });
 
-                page.drawLine({ start: { x: 50, y: 290 }, end: { x: 450, y: 290 }, thickness: 1, color: PDFLib.rgb(0.8, 0.8, 0.8) });
-                page.drawText('Total Paid:', { x: 300, y: 265, size: 11, font: fontBold });
-                page.drawText(`Rs. ${ord.amount}.00`, { x: 390, y: 265, size: 12, font: fontBold, color: PDFLib.rgb(0.1, 0.6, 0.3) });
+                // Table Item Row
+                page.drawRectangle({ x: 40, y: 345, width: 470, height: 55, color: PDFLib.rgb(0.98, 0.98, 0.99), borderColor: PDFLib.rgb(0.9, 0.9, 0.92), borderWidth: 1 });
+                page.drawText(`${ord.bookTitle}`, { x: 55, y: 375, size: 10, font: fontBold });
+                page.drawText('Digital PDF E-Book (Personal License)', { x: 55, y: 358, size: 8, font: fontNorm, color: PDFLib.rgb(0.5, 0.5, 0.5) });
+                page.drawText('1', { x: 325, y: 368, size: 10, font: fontNorm });
+                page.drawText(`Rs. ${ord.amount}.00`, { x: 415, y: 368, size: 10, font: fontBold, color: PDFLib.rgb(0.1, 0.6, 0.3) });
 
-                page.drawText('Payment Status: Confirmed & Approved', { x: 50, y: 200, size: 10, font: fontBold, color: PDFLib.rgb(0.1, 0.5, 0.2) });
-                page.drawText('Notice: This digital product is non-refundable.', { x: 50, y: 180, size: 9, font: fontNorm, color: PDFLib.rgb(0.7, 0.2, 0.2) });
-                page.drawText('Thank you for purchasing at Nool Koodam!', { x: 50, y: 130, size: 10, font: fontBold, color: PDFLib.rgb(0.3, 0.3, 0.3) });
+                // Summary Calculation Block
+                page.drawRectangle({ x: 300, y: 275, width: 210, height: 55, color: PDFLib.rgb(0.95, 0.98, 0.95), borderColor: PDFLib.rgb(0.7, 0.9, 0.7), borderWidth: 1 });
+                page.drawText('Total Paid Amount:', { x: 315, y: 295, size: 11, font: fontBold, color: PDFLib.rgb(0.1, 0.4, 0.2) });
+                page.drawText(`Rs. ${ord.amount}.00`, { x: 425, y: 295, size: 13, font: fontBold, color: PDFLib.rgb(0.08, 0.55, 0.25) });
+
+                // Terms & Security Notice
+                page.drawRectangle({ x: 40, y: 160, width: 470, height: 80, color: PDFLib.rgb(1, 0.97, 0.97), borderColor: PDFLib.rgb(0.95, 0.8, 0.8), borderWidth: 1 });
+                page.drawText('TERMS & CONDITIONS APPLIED:', { x: 55, y: 220, size: 8, font: fontBold, color: PDFLib.rgb(0.7, 0.2, 0.2) });
+                page.drawText('1. Digital Asset Policy: All purchased items are strictly Non-Refundable.', { x: 55, y: 205, size: 8, font: fontNorm });
+                page.drawText('2. Download Quota: Maximum 3 downloads permitted for this invoice order.', { x: 55, y: 190, size: 8, font: fontNorm });
+                page.drawText('3. Copyright Notice: Resale, sharing or modifying this digital publication is prohibited.', { x: 55, y: 175, size: 8, font: fontNorm });
+
+                // Footer signature stamp
+                page.drawText('Nool Koodam Automated Tax Invoice System', { x: 40, y: 90, size: 8, font: fontNorm, color: PDFLib.rgb(0.5, 0.5, 0.5) });
+                page.drawText('Website: noolkoodam.com | Support: support@noolkoodam.com', { x: 40, y: 75, size: 8, font: fontNorm, color: PDFLib.rgb(0.5, 0.5, 0.5) });
 
                 const pdfBytes = await pdfDoc.save();
                 const blob = new Blob([pdfBytes], { type: 'application/pdf' });
