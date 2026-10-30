@@ -24,7 +24,7 @@
 </head>
 <body class="bg-slate-100 flex min-h-screen text-slate-800 pb-20 lg:pb-0">
 
-    <!-- Pop Notification Toast -->
+    <!-- Pop Notification -->
     <div id="toast" class="fixed top-4 inset-x-4 sm:inset-x-auto sm:right-6 sm:top-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border text-xs sm:text-sm font-bold bg-white text-slate-800 border-slate-200 opacity-0 pointer-events-none">
         <div id="toastIcon" class="p-1.5 rounded-full shrink-0"></div>
         <span id="toastMsg" class="truncate">Alert</span>
@@ -61,7 +61,7 @@
     <!-- 2. ADMIN DASHBOARD WORKSPACE -->
     <div id="adminApp" class="flex w-full min-h-screen">
         <!-- Mobile Drawer Backdrop -->
-        <div id="drawerBackdrop" onclick="toggleMobileDrawer()" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-40 hidden lg:hidden"></div>
+        <div id="drawerBackdrop" onclick="toggleMobileDrawer()" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-40 hidden lg:hidden transition-opacity"></div>
 
         <!-- Mobile Drawer Sidebar Menu -->
         <div id="mobileDrawer" class="fixed inset-y-0 left-0 w-72 bg-slate-900 text-white z-50 p-6 flex flex-col justify-between -translate-x-full lg:hidden shadow-2xl">
@@ -114,7 +114,7 @@
                     </button>
                     <button onclick="switchTab('inventory-tab'); toggleMobileDrawer();" class="drawer-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
                         <i data-lucide="book-copy" class="w-4 h-4"></i>
-                        <span data-admin-i18n="menuInventory">புத்தகங்கள் & டவுன்லோட்ஸ்</span>
+                        <span data-admin-i18n="menuInventory">புத்தகங்கள் (Edit/Manage)</span>
                     </button>
                     <button onclick="switchTab('add-book-tab'); toggleMobileDrawer();" class="drawer-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
                         <i data-lucide="plus-circle" class="w-4 h-4"></i>
@@ -155,7 +155,7 @@
                         <i data-lucide="shield-check" class="w-6 h-6"></i>
                     </div>
                     <div>
-                        <h2 class="font-black text-lg tracking-tight">Nool Koodam</h2>
+                        <h2 class="font-black text-lg tracking-tight">நூல் கூடம்</h2>
                         <span class="text-[10px] text-indigo-400 font-bold uppercase tracking-wider">Admin Portal</span>
                     </div>
                 </div>
@@ -193,7 +193,7 @@
                     </button>
                     <button onclick="switchTab('inventory-tab', this)" class="tab-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
                         <i data-lucide="book-copy" class="w-4 h-4"></i>
-                        <span data-admin-i18n="menuInventory">புத்தகங்கள் & டவுன்லோட்ஸ்</span>
+                        <span data-admin-i18n="menuInventory">புத்தகங்கள் (Edit/Manage)</span>
                     </button>
                     <button onclick="switchTab('add-book-tab', this)" class="tab-btn w-full flex items-center gap-3 py-2.5 px-4 text-slate-400 hover:bg-slate-800 rounded-xl transition">
                         <i data-lucide="plus-circle" class="w-4 h-4"></i>
@@ -368,11 +368,9 @@
             <!-- TAB 3: Slide Manager (With Add & Delete Feature) -->
             <section id="slides-tab" class="tab-content bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-sm space-y-4">
                 <div class="flex justify-between items-center">
-                    <div>
-                        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-                            <i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i> ஸ்லைடுகள் மேலாண்மை & AI படம்
-                        </h2>
-                    </div>
+                    <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i> ஸ்லைடுகள் மேலாண்மை & AI படம்
+                    </h2>
                     <button onclick="addNewSlide()" class="px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 flex items-center gap-1 shadow">
                         <i data-lucide="plus" class="w-3.5 h-3.5"></i> புதிய ஸ்லைடு சேர்
                     </button>
@@ -418,35 +416,74 @@
                 </div>
             </section>
 
-            <!-- TAB 5: Add Book (With Selective Watermark Checkbox) -->
-            <section id="add-book-tab" class="tab-content bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-sm max-w-xl space-y-4">
-                <h2 class="text-base font-bold text-slate-900">புதிய புத்தகம் சேர்க்க</h2>
-                <form id="addBookForm" onsubmit="handleAddNewBook(event)" class="space-y-3 text-xs">
-                    <input type="text" id="newBookTitle" required placeholder="தலைப்பு" class="w-full px-3 py-2 border rounded-xl">
-                    <input type="text" id="newBookAuthor" required placeholder="ஆசிரியர்" class="w-full px-3 py-2 border rounded-xl">
-                    <div class="grid grid-cols-2 gap-2">
-                        <input type="number" id="newBookOrigPrice" required placeholder="அசல் விலை" class="px-3 py-2 border rounded-xl">
-                        <input type="number" id="newBookPrice" required placeholder="விற்பனை விலை" class="px-3 py-2 border rounded-xl">
+            <!-- TAB 5: Add Book Form -->
+            <section id="add-book-tab" class="tab-content bg-white rounded-2xl sm:rounded-3xl p-6 border border-slate-200 shadow-sm max-w-2xl space-y-5">
+                <div class="flex items-center gap-3">
+                    <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
+                        <i data-lucide="book-plus" class="w-6 h-6"></i>
                     </div>
-                    <input type="file" id="newBookPdfFile" accept=".pdf" required class="w-full text-xs">
+                    <div>
+                        <h2 class="text-lg font-black text-slate-900">புதிய மின்புத்தகம் சேர்த்தல்</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">மின்புத்தக விவரங்களை உள்ளிட்டு PDF-ஐப் பதிவேற்றவும்.</p>
+                    </div>
+                </div>
 
-                    <!-- Selective Watermark Toggle -->
-                    <div class="p-3 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-between">
+                <form id="addBookForm" onsubmit="handleAddNewBook(event)" class="space-y-4 text-xs sm:text-sm">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">புத்தகத்தின் தலைப்பு <span class="text-rose-500">*</span></label>
+                        <input type="text" id="newBookTitle" required placeholder="எ.கா: வணிக மேலாண்மை" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">ஆசிரியர் பெயர் <span class="text-rose-500">*</span></label>
+                        <input type="text" id="newBookAuthor" required placeholder="முனைவர் ராமகிருஷ்ணன்" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-indigo-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <span class="font-bold text-indigo-950 block">PDF வாட்டர்மார்க் பொறிக்கவா?</span>
-                            <span class="text-[10px] text-slate-500">வாடிக்கையாளர் பதிவிறக்கும் போது பெயர்/எண் பதியும்.</span>
+                            <label class="block font-bold text-slate-700 mb-1">அசல் விலை (₹) <span class="text-rose-500">*</span></label>
+                            <input type="number" id="newBookOrigPrice" required placeholder="399" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">விற்பனை விலை (₹) <span class="text-rose-500">*</span></label>
+                            <input type="number" id="newBookPrice" required placeholder="149" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                        </div>
+                    </div>
+                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                        <label class="block font-bold text-slate-700 text-xs">PDF கோப்பு <span class="text-rose-500">*</span></label>
+                        <input type="file" id="newBookPdfFile" accept=".pdf" required class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-indigo-600 file:text-white cursor-pointer">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block font-bold text-slate-700 text-xs">அட்டைப் படம் URL (Cover Image)</label>
+                        <input type="url" id="newBookCoverUrl" placeholder="https://..." class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">மாதிரி வாசிப்பு விவரம் (Preview Text)</label>
+                        <textarea id="newBookPreview" rows="2" placeholder="புத்தகத்தின் மாதிரி வரிகள்..." class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white"></textarea>
+                    </div>
+
+                    <!-- Watermark Selective Checkbox -->
+                    <div class="p-3.5 bg-indigo-50/70 border border-indigo-100 rounded-xl flex items-center justify-between">
+                        <div>
+                            <span class="font-bold text-indigo-950 text-xs block">PDF வாட்டர்மார்க் பொறிக்கவா?</span>
+                            <span class="text-[10px] text-slate-500">வாடிக்கையாளர் பதிவிறக்கும் போது பெயர்/எண் பொறிக்கப்படும்.</span>
                         </div>
                         <input type="checkbox" id="newBookWatermarkToggle" checked class="w-5 h-5 text-indigo-600 rounded">
                     </div>
 
-                    <button type="submit" class="w-full py-2.5 bg-indigo-600 text-white font-bold rounded-xl shadow">சேர்க்கவும்</button>
+                    <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition text-xs sm:text-sm">
+                        புத்தகத்தை அங்காடியில் சேர்க்கவும்
+                    </button>
                 </form>
             </section>
 
-            <!-- TAB 6: Inventory -->
-            <section id="inventory-tab" class="tab-content bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200 shadow-sm space-y-4">
-                <h2 class="text-base font-bold text-slate-900">புத்தகங்கள் பட்டியல்</h2>
-                <div id="adminBooksList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+            <!-- TAB 6: Inventory (With Edit Modal) -->
+            <section id="inventory-tab" class="tab-content bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-sm space-y-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-900">கடையில் உள்ள புத்தகங்கள் (Edit & Manage)</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">புத்தக விவரங்கள் மற்றும் வாட்டர்மார்க் அமைப்புகளைத் திருத்தலாம்.</p>
+                    </div>
+                </div>
+                <div id="adminBooksList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
             </section>
 
             <!-- TAB 7: Support Tickets -->
@@ -579,7 +616,66 @@
         </main>
     </div>
 
-    <!-- Mobile Bottom Quick Navigation Bar -->
+    <!-- UPGRADED EDIT BOOK MODAL -->
+    <div id="editBookModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl relative max-h-[90vh] overflow-y-auto border border-slate-100">
+            <button onclick="closeEditModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div class="flex items-center gap-3">
+                <div class="p-2.5 bg-amber-50 text-amber-600 rounded-xl"><i data-lucide="edit-3" class="w-5 h-5"></i></div>
+                <div>
+                    <h3 class="text-base sm:text-lg font-black text-slate-900">புத்தகத்தைத் திருத்துக (Edit Book)</h3>
+                    <p class="text-[11px] text-slate-500">விவரங்கள் மற்றும் வாட்டர்மார்க் அமைப்பை மாற்றவும்.</p>
+                </div>
+            </div>
+
+            <form onsubmit="handleSaveBookEdit(event)" class="space-y-3 text-xs sm:text-sm">
+                <input type="hidden" id="editBookIndex">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-0.5">தலைப்பு</label>
+                    <input type="text" id="editBookTitle" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-0.5">ஆசிரியர்</label>
+                    <input type="text" id="editBookAuthor" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-0.5">அசல் விலை (₹)</label>
+                        <input type="number" id="editBookOrigPrice" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-0.5">விற்பனை விலை (₹)</label>
+                        <input type="number" id="editBookPrice" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-0.5">அட்டைப் படம் URL</label>
+                    <input type="url" id="editBookCover" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:bg-white">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-0.5">மாதிரி விளக்கம் (Preview)</label>
+                    <textarea id="editBookPreview" rows="2" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white"></textarea>
+                </div>
+
+                <!-- Watermark Option in Edit Modal -->
+                <div class="p-3 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-between">
+                    <div>
+                        <span class="font-bold text-indigo-950 text-xs block">PDF வாட்டர்மார்க் பொறிக்கவா?</span>
+                        <span class="text-[10px] text-slate-500">வாடிக்கையாளர் பதிவிறக்கும் போது பெயர்/எண் பொறிக்கப்படும்.</span>
+                    </div>
+                    <input type="checkbox" id="editBookWatermarkToggle" class="w-5 h-5 text-indigo-600 rounded">
+                </div>
+
+                <button type="submit" class="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition shadow">
+                    மாற்றங்களைச் சேமிக்கவும் (Save Changes)
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mobile Quick Bar -->
     <div class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-lg border-t border-slate-200 px-4 py-2 flex justify-around items-center text-[10px] font-bold text-slate-500 shadow-2xl">
         <button onclick="switchTab('orders-tab')" class="flex flex-col items-center gap-0.5 hover:text-indigo-600">
             <i data-lucide="receipt" class="w-4 h-4"></i>
@@ -608,7 +704,6 @@
     <script>
         lucide.createIcons();
 
-        // 1. Audio Chime Alert
         function playNewOrderSound() {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -664,7 +759,7 @@
                 menuSlides: "ஸ்லைடுகள் & AI படம்",
                 menuTickets: "உதவி கோரிக்கைகள்",
                 menuFraud: "மோசடி எச்சரிக்கை",
-                menuInventory: "புத்தகங்கள் & டவுன்லோட்ஸ்",
+                menuInventory: "புத்தகங்கள் (Edit/Manage)",
                 menuAddBook: "புதிய புத்தகம் சேர்க்க",
                 menuBackup: "Excel & Backup",
                 menuUpi: "UPI அமைப்புகள்",
@@ -693,7 +788,7 @@
                 menuSlides: "Slides & AI Visuals",
                 menuTickets: "Support Tickets",
                 menuFraud: "Fraud Alerts",
-                menuInventory: "Books Inventory",
+                menuInventory: "Books (Edit/Manage)",
                 menuAddBook: "Add New E-Book",
                 menuBackup: "Excel & Backup",
                 menuUpi: "UPI Settings",
@@ -836,18 +931,25 @@
         function exportOrdersToCSV() {
             const orders = JSON.parse(localStorage.getItem('ebook_orders') || '[]');
             if (orders.length === 0) {
-                showToast("No orders available!", "error");
+                showToast("No orders available to export!", "error");
                 return;
             }
-            let csvContent = "data:text/csv;charset=utf-8,Order ID,Name,Mobile,Book,Amount,UTR,Status,Date\n";
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Order ID,Customer Name,Mobile,Book Title,Amount,UTR,Status,Date\n";
+
             orders.forEach(o => {
                 csvContent += `"${o.id}","${o.customerName}","${o.customerMobile}","${o.bookTitle}","${o.amount}","${o.utr}","${o.status}","${o.date}"\n`;
             });
+
+            const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
-            link.href = encodeURI(csvContent);
-            link.download = `Orders_${Date.now()}.csv`;
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `NoolKoodam_Orders_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
             link.click();
-            showToast("CSV Downloaded!");
+            document.body.removeChild(link);
+            showToast("CSV file exported successfully!");
         }
 
         function exportFullBackupJSON() {
@@ -859,12 +961,55 @@
                 slides: JSON.parse(localStorage.getItem('admin_slides_data') || '[]'),
                 upi: JSON.parse(localStorage.getItem('admin_upi_settings') || '{}')
             };
+
             const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = `NoolKoodam_Backup_${Date.now()}.json`;
+            link.download = `NoolKoodam_Full_Backup_${new Date().toISOString().slice(0,10)}.json`;
             link.click();
-            showToast("Backup saved!");
+            showToast("Backup saved successfully!");
+        }
+
+        function handleCreateCoupon(e) {
+            e.preventDefault();
+            const code = document.getElementById('newCouponCode').value.trim().toUpperCase();
+            const percent = Number(document.getElementById('newCouponPercent').value);
+
+            const coupons = JSON.parse(localStorage.getItem('admin_coupons_data') || '[]');
+            coupons.push({ code, percent });
+            localStorage.setItem('admin_coupons_data', JSON.stringify(coupons));
+            
+            showToast(`Coupon ${code} added!`);
+            e.target.reset();
+            renderCoupons();
+        }
+
+        function renderCoupons() {
+            const tableBody = document.getElementById('couponsTableBody');
+            const coupons = JSON.parse(localStorage.getItem('admin_coupons_data') || '[]');
+
+            if (coupons.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="3" class="py-4 text-center text-slate-400">No active coupons.</td></tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = coupons.map((c, idx) => `
+                <tr>
+                    <td class="py-2 px-3 font-mono font-bold text-indigo-600">${c.code}</td>
+                    <td class="py-2 px-3 font-bold">${c.percent}% OFF</td>
+                    <td class="py-2 px-3 text-right">
+                        <button onclick="deleteCoupon(${idx})" class="text-rose-500 hover:underline">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function deleteCoupon(idx) {
+            const coupons = JSON.parse(localStorage.getItem('admin_coupons_data') || '[]');
+            coupons.splice(idx, 1);
+            localStorage.setItem('admin_coupons_data', JSON.stringify(coupons));
+            renderCoupons();
+            showToast("Coupon deleted.");
         }
 
         function renderOrders() {
@@ -880,7 +1025,7 @@
             document.getElementById('statOrders').innerText = orders.length;
 
             if (orders.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="9" class="py-6 text-center text-slate-400 text-xs">ஆர்டர்கள் ஏதுமில்லை.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="9" class="py-6 text-center text-slate-400 text-xs">No customer orders recorded yet.</td></tr>`;
                 return;
             }
 
@@ -895,7 +1040,7 @@
                 return `
                     <tr class="hover:bg-slate-50 transition text-xs">
                         <td class="py-2.5 px-3 font-bold text-indigo-600">${ord.id}</td>
-                        <td class="py-2.5 px-3 font-bold text-slate-800">${ord.customerName || 'User'}</td>
+                        <td class="py-2.5 px-3 font-bold text-slate-800">${ord.customerName || 'Customer'}</td>
                         <td class="py-2.5 px-3 font-mono">${ord.customerMobile || '-'}</td>
                         <td class="py-2.5 px-3 truncate max-w-[130px]">${ord.bookTitle}</td>
                         <td class="py-2.5 px-3 font-bold">₹${ord.amount}</td>
@@ -914,12 +1059,12 @@
                             ${!isApproved && !isRejected ? `
                                 <div class="flex items-center justify-end gap-1">
                                     <button onclick="approveOrder(${idx})" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[11px] font-bold">Approve</button>
-                                    <button onclick="rejectOrder(${idx})" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-md text-[11px] font-bold">Reject</button>
+                                    <button onclick="rejectOrder(${idx})" class="px-2 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-md text-[11px] font-bold">Reject</button>
                                 </div>
                             ` : `
                                 <div class="flex items-center justify-end gap-1">
                                     <span class="text-[11px] text-slate-400 font-bold">${ord.status}</span>
-                                    <a href="https://wa.me/91${ord.customerMobile}?text=${encodeURIComponent('வணக்கம் ' + ord.customerName + ', உங்கள் புத்தகம் (' + ord.bookTitle + ') அனுமதிக்கப்பட்டது!')}" target="_blank" class="p-1 text-emerald-600 hover:bg-emerald-50 rounded" title="WhatsApp Alert"><i data-lucide="send" class="w-3.5 h-3.5"></i></a>
+                                    <a href="https://wa.me/91${ord.customerMobile}?text=${encodeURIComponent('Hello ' + ord.customerName + ', your order for ' + ord.bookTitle + ' has been approved! You can now download it on the website.')}" target="_blank" class="p-1 text-emerald-600 hover:bg-emerald-50 rounded" title="WhatsApp Alert"><i data-lucide="send" class="w-3.5 h-3.5"></i></a>
                                 </div>
                             `}
                         </td>
@@ -933,30 +1078,30 @@
             const orders = JSON.parse(localStorage.getItem('ebook_orders') || '[]');
             orders[idx].status = 'Approved';
             localStorage.setItem('ebook_orders', JSON.stringify(orders));
-            showToast(`ஆர்டர் ${orders[idx].id} அனுமதிக்கப்பட்டது!`);
+            showToast(`Order ${orders[idx].id} Approved!`);
             renderOrders();
             renderCustomers();
         }
 
         function rejectOrder(idx) {
-            if (!confirm('இந்த ஆர்டரை நிராகரிக்கவா?')) return;
+            if (!confirm('Reject this order?')) return;
             const orders = JSON.parse(localStorage.getItem('ebook_orders') || '[]');
             orders[idx].status = 'Rejected';
             localStorage.setItem('ebook_orders', JSON.stringify(orders));
-            showToast(`ஆர்டர் நிராகரிக்கப்பட்டது!`, 'error');
+            showToast(`Order rejected!`, 'error');
             renderOrders();
         }
 
         function clearCompletedOrders() {
-            if (!confirm('முடிந்த ஆர்டர்களை நீக்கவா?')) return;
+            if (!confirm('Clear completed orders?')) return;
             const orders = JSON.parse(localStorage.getItem('ebook_orders') || '[]');
             const activeOnly = orders.filter(o => o.status !== 'Approved' && o.status !== 'Rejected');
             localStorage.setItem('ebook_orders', JSON.stringify(activeOnly));
-            showToast('பழைய ஆர்டர்கள் நீக்கப்பட்டன.');
+            showToast('Finished orders cleared.');
             renderOrders();
         }
 
-        // Render Customer CRM Directory
+        // Render Customers CRM Directory
         function renderCustomers() {
             const tableBody = document.getElementById('customersTableBody');
             const orders = JSON.parse(localStorage.getItem('ebook_orders') || '[]');
@@ -999,10 +1144,30 @@
             lucide.createIcons();
         }
 
-        // Slide Add & Delete Logic
+        // SLIDES ENGINE WITH AI GENERATION & ADD/DELETE
+        const DEFAULT_SLIDES = [
+            {
+                tag: "1 / 3 • சலுகை",
+                title: "மின்புத்தகங்களுக்கு 50% வரை தள்ளுபடி!",
+                desc: "UPI மூலம் நொடிகளில் பணம் செலுத்தி உடனடி PDF பதிவிறக்கம் செய்யுங்கள்.",
+                bgImage: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=1600&auto=format&fit=crop&q=80"
+            },
+            {
+                tag: "2 / 3 • உடனடி UPI",
+                title: "QR குறியீடு மற்றும் மொபைல் ஆப் கட்டணம்",
+                desc: "GPay, PhonePe, Paytm வழியாக நேரடியாக உங்கள் வங்கிக் கணக்கிலிருந்து செலுத்தலாம்.",
+                bgImage: "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=1600&auto=format&fit=crop&q=80"
+            }
+        ];
+
+        function getAdminSlides() {
+            const data = localStorage.getItem('admin_slides_data');
+            return data ? JSON.parse(data) : DEFAULT_SLIDES;
+        }
+
         function renderSlidesEditor() {
             const container = document.getElementById('slidesEditContainer');
-            const slides = JSON.parse(localStorage.getItem('admin_slides_data') || '[]');
+            const slides = getAdminSlides();
 
             container.innerHTML = slides.map((s, idx) => `
                 <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-2.5 relative">
@@ -1037,7 +1202,7 @@
         }
 
         function addNewSlide() {
-            const slides = JSON.parse(localStorage.getItem('admin_slides_data') || '[]');
+            const slides = getAdminSlides();
             slides.push({
                 tag: `${slides.length + 1} / ${slides.length + 1} • புதியது`,
                 title: "புதிய சிறப்பு மின்புத்தகம்!",
@@ -1051,7 +1216,7 @@
 
         function deleteSlide(idx) {
             if (!confirm('இந்த ஸ்லைடை நீக்கவா?')) return;
-            const slides = JSON.parse(localStorage.getItem('admin_slides_data') || '[]');
+            const slides = getAdminSlides();
             slides.splice(idx, 1);
             localStorage.setItem('admin_slides_data', JSON.stringify(slides));
             showToast("ஸ்லைடு நீக்கப்பட்டது.");
@@ -1067,7 +1232,7 @@
             document.getElementById(`slideImage_${idx}`).value = aiImageUrl;
             document.getElementById(`slideImgPreview_${idx}`).src = aiImageUrl;
 
-            const slides = JSON.parse(localStorage.getItem('admin_slides_data') || '[]');
+            const slides = getAdminSlides();
             slides[idx].bgImage = aiImageUrl;
             slides[idx].title = titleInput;
             slides[idx].desc = document.getElementById(`slideDesc_${idx}`).value.trim();
@@ -1076,7 +1241,7 @@
         }
 
         function saveSingleSlide(idx) {
-            const slides = JSON.parse(localStorage.getItem('admin_slides_data') || '[]');
+            const slides = getAdminSlides();
             slides[idx].title = document.getElementById(`slideTitle_${idx}`).value.trim();
             slides[idx].desc = document.getElementById(`slideDesc_${idx}`).value.trim();
             slides[idx].bgImage = document.getElementById(`slideImage_${idx}`).value.trim();
@@ -1100,8 +1265,10 @@
             const author = document.getElementById('newBookAuthor').value.trim();
             const origPrice = Number(document.getElementById('newBookOrigPrice').value);
             const price = Number(document.getElementById('newBookPrice').value);
-            const pdfFile = document.getElementById('newBookPdfFile').files[0];
+            const coverUrl = document.getElementById('newBookCoverUrl').value.trim() || "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80";
+            const previewText = document.getElementById('newBookPreview').value.trim() || `${title} - சிறந்த தமிழ் மின்புத்தகம்.`;
             const enableWatermark = document.getElementById('newBookWatermarkToggle').checked;
+            const pdfFile = document.getElementById('newBookPdfFile').files[0];
 
             const pdfBase64 = await fileToBase64(pdfFile);
 
@@ -1109,7 +1276,8 @@
             books.push({
                 id: Date.now(),
                 title, author, origPrice, price,
-                cover: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80",
+                cover: coverUrl,
+                preview: previewText,
                 pdfData: pdfBase64,
                 enableWatermark: enableWatermark
             });
@@ -1120,6 +1288,7 @@
             switchTab('inventory-tab');
         }
 
+        // Render Books with Edit & Delete Option
         function renderBooks() {
             const container = document.getElementById('adminBooksList');
             const books = JSON.parse(localStorage.getItem('ebook_inventory') || '[]');
@@ -1128,16 +1297,67 @@
                 return;
             }
             container.innerHTML = books.map((b, idx) => `
-                <div class="p-3 bg-slate-50 border rounded-xl flex items-center justify-between">
-                    <div>
-                        <h4 class="font-bold text-xs">${b.title}</h4>
-                        <span class="text-emerald-600 font-bold">₹${b.price}</span>
-                        <span class="block text-[10px] text-slate-400">வாட்டர்மார்க்: ${b.enableWatermark !== false ? 'ஆம்' : 'இல்லை'}</span>
+                <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between gap-3">
+                    <img src="${b.cover}" class="w-12 h-16 object-cover rounded-lg bg-slate-200 shrink-0">
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-bold text-xs truncate">${b.title}</h4>
+                        <p class="text-[10px] text-slate-500 truncate">${b.author}</p>
+                        <p class="text-xs font-bold text-emerald-600 mt-0.5">₹${b.price}</p>
+                        <span class="inline-block mt-0.5 px-2 py-0.5 bg-cyan-100 text-cyan-800 rounded text-[9px] font-extrabold">வாட்டர்மார்க்: ${b.enableWatermark !== false ? 'ஆம்' : 'இல்லை'}</span>
                     </div>
-                    <button onclick="deleteBook(${idx})" class="text-rose-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    <div class="flex flex-col gap-1.5 shrink-0">
+                        <button onclick="openEditModal(${idx})" class="p-1.5 bg-amber-100 text-amber-700 hover:bg-amber-200 rounded-lg text-xs font-bold flex items-center gap-1">
+                            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> திருத்து
+                        </button>
+                        <button onclick="deleteBook(${idx})" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg text-xs flex items-center gap-1 justify-center">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
                 </div>
             `).join('');
             lucide.createIcons();
+        }
+
+        // Open Edit Modal with Book Data
+        function openEditModal(index) {
+            const books = JSON.parse(localStorage.getItem('ebook_inventory') || '[]');
+            const book = books[index];
+            if (!book) return;
+
+            document.getElementById('editBookIndex').value = index;
+            document.getElementById('editBookTitle').value = book.title;
+            document.getElementById('editBookAuthor').value = book.author;
+            document.getElementById('editBookOrigPrice').value = book.origPrice;
+            document.getElementById('editBookPrice').value = book.price;
+            document.getElementById('editBookCover').value = book.cover;
+            document.getElementById('editBookPreview').value = book.preview || '';
+            document.getElementById('editBookWatermarkToggle').checked = book.enableWatermark !== false;
+
+            document.getElementById('editBookModal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editBookModal').classList.add('hidden');
+        }
+
+        function handleSaveBookEdit(e) {
+            e.preventDefault();
+            const index = document.getElementById('editBookIndex').value;
+            const books = JSON.parse(localStorage.getItem('ebook_inventory') || '[]');
+            if (!books[index]) return;
+
+            books[index].title = document.getElementById('editBookTitle').value.trim();
+            books[index].author = document.getElementById('editBookAuthor').value.trim();
+            books[index].origPrice = Number(document.getElementById('editBookOrigPrice').value);
+            books[index].price = Number(document.getElementById('editBookPrice').value);
+            books[index].cover = document.getElementById('editBookCover').value.trim();
+            books[index].preview = document.getElementById('editBookPreview').value.trim();
+            books[index].enableWatermark = document.getElementById('editBookWatermarkToggle').checked;
+
+            localStorage.setItem('ebook_inventory', JSON.stringify(books));
+            showToast("புத்தக விவரங்கள் புதுப்பிக்கப்பட்டன!");
+            closeEditModal();
+            renderBooks();
         }
 
         function deleteBook(idx) {
@@ -1146,43 +1366,7 @@
             books.splice(idx, 1);
             localStorage.setItem('ebook_inventory', JSON.stringify(books));
             renderBooks();
-        }
-
-        function handleCreateCoupon(e) {
-            e.preventDefault();
-            const code = document.getElementById('newCouponCode').value.trim().toUpperCase();
-            const percent = Number(document.getElementById('newCouponPercent').value);
-            const coupons = JSON.parse(localStorage.getItem('admin_coupons_data') || '[]');
-            coupons.push({ code, percent });
-            localStorage.setItem('admin_coupons_data', JSON.stringify(coupons));
-            showToast("கூப்பன் சேர்க்கப்பட்டது!");
-            e.target.reset();
-            renderCoupons();
-        }
-
-        function renderCoupons() {
-            const tableBody = document.getElementById('couponsTableBody');
-            const coupons = JSON.parse(localStorage.getItem('admin_coupons_data') || '[]');
-            if (coupons.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="3" class="py-4 text-center text-slate-400">கூப்பன்கள் ஏதுமில்லை.</td></tr>`;
-                return;
-            }
-            tableBody.innerHTML = coupons.map((c, i) => `
-                <tr>
-                    <td class="py-2 px-3 font-mono font-bold text-indigo-600">${c.code}</td>
-                    <td class="py-2 px-3 font-bold">${c.percent}% OFF</td>
-                    <td class="py-2 px-3 text-right">
-                        <button onclick="deleteCoupon(${i})" class="text-rose-500 hover:underline">நீக்கு</button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        function deleteCoupon(i) {
-            const coupons = JSON.parse(localStorage.getItem('admin_coupons_data') || '[]');
-            coupons.splice(i, 1);
-            localStorage.setItem('admin_coupons_data', JSON.stringify(coupons));
-            renderCoupons();
+            showToast("புத்தகம் நீக்கப்பட்டது.");
         }
 
         function renderSupportTickets() {
@@ -1194,7 +1378,7 @@
             if (badgeDrawer) badgeDrawer.innerText = tickets.length;
 
             if (tickets.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400 text-xs">எந்த உதவி கோரிக்கைகளும் இல்லை.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400 text-xs">No pending support tickets.</td></tr>`;
                 return;
             }
 
@@ -1204,10 +1388,10 @@
                     <td class="py-2.5 px-3 font-bold text-slate-800">${t.name}</td>
                     <td class="py-2.5 px-3 font-mono font-bold text-indigo-600">${t.phone}</td>
                     <td class="py-2.5 px-3 font-mono">${t.utr || '-'}</td>
-                    <td class="py-2.5 px-3 text-slate-600 max-w-[200px] truncate" title="${t.msg}">${t.msg}</td>
+                    <td class="py-2.5 px-3 text-slate-600 max-w-[200px] truncate">${t.msg}</td>
                     <td class="py-2.5 px-3 text-slate-400 text-[11px]">${t.date}</td>
                     <td class="py-2.5 px-3 text-right">
-                        <a href="https://wa.me/91${t.phone}?text=வணக்கம் ${encodeURIComponent(t.name)}, உங்கள் உதவி கோரிக்கை தொடர்பாக தொடர்புகொள்கிறோம்." target="_blank" class="px-2 py-1 bg-emerald-600 text-white rounded text-[10px] font-bold">WhatsApp</a>
+                        <a href="https://wa.me/91${t.phone}?text=Hello ${encodeURIComponent(t.name)}, regarding your support ticket ${t.id}" target="_blank" class="px-2 py-1 bg-emerald-600 text-white rounded text-[10px] font-bold">WhatsApp</a>
                     </td>
                 </tr>
             `).join('');
@@ -1215,9 +1399,9 @@
         }
 
         function clearSupportTickets() {
-            if (!confirm('உதவி கோரிக்கைகளை அழிக்கவா?')) return;
+            if (!confirm('Clear all tickets?')) return;
             localStorage.removeItem('admin_support_tickets');
-            showToast('உதவி கோரிக்கைகள் அழிக்கப்பட்டன.');
+            showToast('Tickets cleared.');
             renderSupportTickets();
         }
 
@@ -1232,7 +1416,7 @@
             if (badgeDrawer) badgeDrawer.innerText = fraudList.length;
 
             if (fraudList.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400 text-xs">மோசடி எச்சரிக்கைகள் ஏதுமில்லை.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-slate-400 text-xs">No fraud logs registered.</td></tr>`;
                 return;
             }
 
@@ -1250,7 +1434,9 @@
                             ${isBlocked ? `
                                 <button onclick="unblockUser('${frd.email}', '${frd.mobile}')" class="px-2.5 py-1 bg-slate-200 text-slate-700 rounded text-[10px] font-bold">Unblock</button>
                             ` : `
-                                <button onclick="blockUser('${frd.email}', '${frd.mobile}', '${frd.name}')" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-[10px] font-bold">Block</button>
+                                <button onclick="blockUser('${frd.email}', '${frd.mobile}', '${frd.name}')" class="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-[10px] font-bold ml-auto flex items-center gap-1">
+                                    <i data-lucide="ban" class="w-3 h-3"></i> Block
+                                </button>
                             `}
                         </td>
                     </tr>
@@ -1272,12 +1458,12 @@
             let blockedUsers = JSON.parse(localStorage.getItem('admin_blocked_users') || '[]');
             blockedUsers = blockedUsers.filter(b => b.email !== email && b.mobile !== mobile);
             localStorage.setItem('admin_blocked_users', JSON.stringify(blockedUsers));
-            showToast('User unblocked.');
+            showToast('User has been unblocked.');
             renderFraudAlerts();
         }
 
         function clearFraudLogs() {
-            if (!confirm('Clear fraud alerts?')) return;
+            if (!confirm('Clear all fraud alerts?')) return;
             localStorage.removeItem('admin_fraud_alerts');
             showToast('Fraud logs cleared.');
             renderFraudAlerts();
@@ -1294,7 +1480,7 @@
             const upiId = document.getElementById('adminUpiId').value.trim();
             const storeName = document.getElementById('adminStoreName').value.trim();
             localStorage.setItem('admin_upi_settings', JSON.stringify({ upiId, storeName }));
-            showToast('UPI அமைப்புகள் சேமிக்கப்பட்டன!');
+            showToast('UPI settings saved!');
         }
 
         function renderAll() {
